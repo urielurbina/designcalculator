@@ -13,7 +13,10 @@ export default function EmailSubscriptionModal({
   onClose,
   onSubscribe 
 }: EmailSubscriptionModalProps) {
-  const [email, setEmail] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -23,8 +26,8 @@ export default function EmailSubscriptionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim()) {
-      setError('Por favor ingresa un email válido');
+    if (!formData.email.trim() || !formData.name.trim()) {
+      setError('Por favor completa todos los campos');
       return;
     }
 
@@ -32,7 +35,7 @@ export default function EmailSubscriptionModal({
     setError('');
 
     try {
-      await subscribeEmail(email);
+      await subscribeEmail(formData);
       setSuccess(true);
       // Esperar un momento antes de cerrar para mostrar el mensaje de éxito
       setTimeout(() => {
@@ -84,6 +87,22 @@ export default function EmailSubscriptionModal({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Nombre
+              </label>
+              <input
+                type="text"
+                id="name"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className={`w-full rounded-lg border shadow-sm focus:ring-indigo-500 
+                  ${error ? 'border-red-300' : 'border-gray-300'}`}
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Correo Electrónico
               </label>
@@ -91,8 +110,8 @@ export default function EmailSubscriptionModal({
                 type="email"
                 id="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 className={`w-full rounded-lg border shadow-sm focus:ring-indigo-500 
                   ${error ? 'border-red-300' : 'border-gray-300'}`}
                 placeholder="tu@email.com"
@@ -127,7 +146,7 @@ export default function EmailSubscriptionModal({
             </button>
 
             <p className="text-xs text-gray-500 text-center">
-              No compartiremos tu correo con terceros. Puedes darte de baja en cualquier momento.
+              No compartiremos tu información con terceros. Puedes darte de baja en cualquier momento.
             </p>
           </form>
         </div>

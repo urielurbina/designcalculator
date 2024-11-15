@@ -10,7 +10,12 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function subscribeEmail(email: string) {
+interface SubscriptionData {
+  email: string;
+  name: string;
+}
+
+export async function subscribeEmail({ email, name }: SubscriptionData) {
   // Verificar si el email ya existe
   const { data: existing } = await supabase
     .from('subscriptions')
@@ -28,6 +33,7 @@ export async function subscribeEmail(email: string) {
     .insert([
       { 
         email,
+        name,
         subscribed_at: new Date().toISOString(),
         status: 'active'
       }

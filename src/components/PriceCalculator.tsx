@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { useCalculator } from '../hooks/useCalculator';
 import { Service } from '../types';
@@ -10,6 +10,9 @@ import TermsEditor from './TermsEditor';
 import EmailSubscriptionModal from './EmailSubscriptionModal';
 
 export default function PriceCalculator() {
+  const servicesListRef = useRef<HTMLDivElement>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
+  
   const {
     selectedServices,
     volumeDiscount,
@@ -60,6 +63,20 @@ export default function PriceCalculator() {
     notes: ''
   });
 
+  useEffect(() => {
+    if (shouldScroll && servicesListRef.current) {
+      const headerOffset = 100;
+      const elementPosition = servicesListRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      setShouldScroll(false);
+    }
+  }, [shouldScroll, selectedServices]);
+
   const handleServiceChange = (field: keyof Service, value: string) => {
     setCurrentService(prev => ({ ...prev, [field]: value }));
   };
@@ -67,6 +84,7 @@ export default function PriceCalculator() {
   const handleAddService = () => {
     if (currentService.category && currentService.id) {
       addService(currentService as Service);
+      
       // Reset form to default values
       setCurrentService({
         category: 'identidad-corporativa',
@@ -77,11 +95,8 @@ export default function PriceCalculator() {
         scope: 'basico'
       });
 
-      // Scroll to services list
-      const servicesList = document.getElementById('services-list');
-      if (servicesList) {
-        servicesList.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Trigger scroll after service is added
+      setShouldScroll(true);
     }
   };
 
@@ -96,18 +111,22 @@ export default function PriceCalculator() {
   const totalPrice = getTotalPrice();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-12 px-4">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-6 sm:py-12 px-4">
+      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
         {/* Header with Instructions */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
           <div className="flex items-center gap-3 mb-4">
-            <FileText className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-gray-800">Calculadora de Precios</h1>
+            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+              Calculadora de Precios
+            </h1>
           </div>
           
-          <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h2 className="text-lg font-semibold text-blue-800 mb-2">¿Cómo usar la calculadora?</h2>
-            <ol className="list-decimal list-inside space-y-2 text-blue-700">
+          <div className="mb-6 sm:mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h2 className="text-base sm:text-lg font-semibold text-blue-800 mb-2">
+              ¿Cómo usar la calculadora?
+            </h2>
+            <ol className="list-decimal list-inside space-y-2 text-sm sm:text-base text-blue-700">
               <li>Selecciona la categoría y el servicio que deseas cotizar</li>
               <li>Ajusta la complejidad según los requerimientos del proyecto</li>
               <li>Define la urgencia y el alcance del trabajo</li>
@@ -126,7 +145,7 @@ export default function PriceCalculator() {
 
         {/* Selected Services List */}
         {selectedServices.length > 0 && (
-          <div id="services-list" className="bg-white rounded-2xl shadow-xl p-8">
+          <div ref={servicesListRef} className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
             <ServiceList
               services={selectedServices}
               onRemoveService={removeService}
@@ -134,7 +153,7 @@ export default function PriceCalculator() {
             />
 
             {/* Global Options */}
-            <div className="mt-8 grid md:grid-cols-3 gap-4">
+            <div className="mt-6 sm:mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Descuento por Volumen
@@ -172,7 +191,7 @@ export default function PriceCalculator() {
                 </select>
               </div>
 
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Mantenimiento
                   <span className="ml-1 text-gray-500 text-xs">
@@ -192,7 +211,7 @@ export default function PriceCalculator() {
               </div>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <button
                 onClick={handleGenerateQuote}
                 className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
@@ -209,13 +228,13 @@ export default function PriceCalculator() {
 
         {/* Quote Form with Terms Editor */}
         {showQuoteForm && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
             <QuoteForm
               quoteInfo={quoteInfo}
               onQuoteInfoChange={setQuoteInfo}
             />
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <TermsEditor
                 terms={terms}
                 onChange={setTerms}

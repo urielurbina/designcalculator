@@ -60,25 +60,52 @@ export default function FreelanceCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-6 px-4 sm:py-12">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-          <div className="flex items-center gap-3 mb-8">
-            <Clock className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+        {/* Resultados Móviles (Sticky Top) */}
+        <div className="lg:hidden sticky top-0 z-10 mb-6">
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold text-white">Tarifa por Hora</h2>
+              <div className="text-2xl font-bold text-white flex items-center gap-1">
+                <DollarSign className="w-5 h-5" />
+                {formatMoney(rates.hourly)}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs text-indigo-100">
+              <div>
+                <span className="block">Diario</span>
+                <span className="font-semibold">${formatMoney(rates.daily)}</span>
+              </div>
+              <div>
+                <span className="block">Semanal</span>
+                <span className="font-semibold">${formatMoney(rates.weekly)}</span>
+              </div>
+              <div>
+                <span className="block">Mensual</span>
+                <span className="font-semibold">${formatMoney(rates.monthly)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
               Calculadora de Tarifa Freelance
             </h1>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               {/* Ingresos y Tiempo */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">
                   Ingresos y Tiempo
                 </h2>
-                <div className="space-y-4">
-                  <div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ingreso Mensual Deseado ($)
                     </label>
@@ -95,7 +122,7 @@ export default function FreelanceCalculator() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Horas de Trabajo por Día
+                      Horas por Día
                     </label>
                     <input
                       type="number"
@@ -109,7 +136,7 @@ export default function FreelanceCalculator() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Días de Trabajo por Semana
+                      Días por Semana
                     </label>
                     <input
                       type="number"
@@ -123,7 +150,7 @@ export default function FreelanceCalculator() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Días de Vacaciones al Año
+                      Días de Vacaciones
                     </label>
                     <input
                       type="number"
@@ -137,7 +164,7 @@ export default function FreelanceCalculator() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Días por Enfermedad al Año
+                      Días por Enfermedad
                     </label>
                     <input
                       type="number"
@@ -151,10 +178,7 @@ export default function FreelanceCalculator() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tiempo No Facturable (%)
-                      <span className="text-xs text-gray-500 ml-1">
-                        (reuniones, presupuestos, etc.)
-                      </span>
+                      No Facturable (%)
                     </label>
                     <input
                       type="number"
@@ -169,9 +193,6 @@ export default function FreelanceCalculator() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Margen de Beneficio (%)
-                      <span className="text-xs text-gray-500 ml-1">
-                        (emergencias, jubilación, etc.)
-                      </span>
                     </label>
                     <input
                       type="number"
@@ -191,7 +212,7 @@ export default function FreelanceCalculator() {
                   Gastos Mensuales Fijos
                 </h2>
                 
-                <form onSubmit={handleAddExpense} className="flex gap-2 mb-4">
+                <form onSubmit={handleAddExpense} className="flex flex-col sm:flex-row gap-2 mb-4">
                   <input
                     type="text"
                     placeholder="Concepto"
@@ -199,22 +220,24 @@ export default function FreelanceCalculator() {
                     onChange={(e) => setNewExpense(prev => ({ ...prev, name: e.target.value }))}
                     className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
-                  <input
-                    type="text"
-                    placeholder="Monto"
-                    value={newExpense.amount}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '');
-                      setNewExpense(prev => ({ ...prev, amount: value }));
-                    }}
-                    className="w-32 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Monto"
+                      value={newExpense.amount}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        setNewExpense(prev => ({ ...prev, amount: value }));
+                      }}
+                      className="w-32 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                    <button
+                      type="submit"
+                      className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 shrink-0"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
                 </form>
 
                 <div className="space-y-2">
@@ -238,37 +261,43 @@ export default function FreelanceCalculator() {
                               const value = e.target.value.replace(/[^0-9]/g, '');
                               setEditValue(prev => ({ ...prev, amount: value }));
                             }}
-                            className="w-32 rounded border-gray-300 text-sm"
+                            className="w-24 sm:w-32 rounded border-gray-300 text-sm"
                           />
-                          <button
-                            onClick={() => saveEdit(expense.id)}
-                            className="text-green-600 p-1 hover:bg-green-50 rounded"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="text-gray-600 p-1 hover:bg-gray-100 rounded"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => saveEdit(expense.id)}
+                              className="text-green-600 p-1 hover:bg-green-50 rounded"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="text-gray-600 p-1 hover:bg-gray-100 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
                         </>
                       ) : (
                         <>
                           <span className="flex-1 text-sm">{expense.name}</span>
-                          <span className="text-sm font-medium">${formatMoney(expense.amount)}</span>
-                          <button
-                            onClick={() => startEditing(expense)}
-                            className="text-gray-600 p-1 hover:bg-gray-100 rounded"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => removeExpense(expense.id)}
-                            className="text-red-600 p-1 hover:bg-red-50 rounded"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <span className="text-sm font-medium w-24 sm:w-32 text-right">
+                            ${formatMoney(expense.amount)}
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => startEditing(expense)}
+                              className="text-gray-600 p-1 hover:bg-gray-100 rounded"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => removeExpense(expense.id)}
+                              className="text-red-600 p-1 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </>
                       )}
                     </div>
@@ -277,8 +306,8 @@ export default function FreelanceCalculator() {
               </div>
             </div>
 
-            {/* Resultados */}
-            <div>
+            {/* Resultados Desktop */}
+            <div className="hidden lg:block">
               <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 sticky top-24">
                 <h2 className="text-xl font-semibold text-white mb-6">
                   Tarifas Recomendadas
