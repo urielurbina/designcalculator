@@ -37,6 +37,22 @@ export default function Footer() {
                   <span>Calculadora Freelance</span>
                 </Link>
               </li>
+              <li>
+                <Link 
+                  to="/privacy"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/terms"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  Términos de Servicio
+                </Link>
+              </li>
             </ul>
           </div>
 
