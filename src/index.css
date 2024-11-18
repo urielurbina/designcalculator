@@ -20,4 +20,19 @@
   .form-label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  textarea,
+  select {
+    @apply px-4 py-2;
+  }
+  textarea {
+    @apply px-4 py-3;
+  }
+  select {
+    @apply pl-4 pr-8;
+  }
 }

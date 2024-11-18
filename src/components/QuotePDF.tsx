@@ -13,7 +13,6 @@ import { QuoteInfo, SelectedService } from '../types';
 import { FileDown } from 'lucide-react';
 import { volumeDiscounts, clientDiscounts, maintenanceFees } from '../data/pricing';
 
-// Registrar fuentes
 Font.register({
   family: 'Helvetica',
   fonts: [
@@ -26,13 +25,15 @@ const styles = StyleSheet.create({
     padding: 40,
     fontFamily: 'Helvetica',
     fontSize: 12,
+    backgroundColor: '#ffffff',
+    color: '#374151',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 40,
-    borderBottomWidth: 2,
-    borderBottomColor: '#6366f1',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
     paddingBottom: 20,
   },
   headerLeft: {
@@ -48,61 +49,77 @@ const styles = StyleSheet.create({
     objectFit: 'contain',
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontFamily: 'Helvetica',
-    color: '#4f46e5',
-    marginBottom: 10,
+    color: '#111827',
+    marginBottom: 8,
   },
   quoteDetails: {
-    marginTop: 10,
+    marginTop: 8,
   },
   quoteNumber: {
     fontSize: 14,
     color: '#6b7280',
+    marginBottom: 4,
   },
   dates: {
     fontSize: 10,
     color: '#6b7280',
-    marginTop: 5,
   },
   section: {
     marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Helvetica',
-    color: '#4f46e5',
-    marginBottom: 15,
-    paddingBottom: 5,
+    color: '#111827',
+    marginBottom: 12,
+    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f3f4f6',
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    gap: 40,
+    marginBottom: 40,
+  },
+  infoColumn: {
+    flex: 1,
+  },
+  infoItem: {
+    marginBottom: 12,
+  },
+  infoLabel: {
+    fontSize: 10,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 12,
+    color: '#111827',
   },
   serviceItem: {
-    marginBottom: 15,
-    padding: 10,
+    marginBottom: 16,
+    padding: 16,
     backgroundColor: '#f9fafb',
+    borderRadius: 6,
   },
   serviceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   serviceName: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#111827',
-    fontWeight: 'bold',
   },
   servicePrice: {
-    fontSize: 14,
-    color: '#4f46e5',
-    fontWeight: 'bold',
-  },
-  serviceDetails: {
-    marginTop: 5,
+    fontSize: 13,
+    color: '#111827',
   },
   serviceDescription: {
-    fontSize: 10,
-    color: '#4b5563',
+    fontSize: 11,
+    color: '#6b7280',
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
@@ -111,8 +128,9 @@ const styles = StyleSheet.create({
   },
   priceBreakdown: {
     marginTop: 30,
-    padding: 20,
-    backgroundColor: '#f8fafc',
+    padding: 24,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
   },
   priceRow: {
     flexDirection: 'row',
@@ -120,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6b7280',
   },
   value: {
@@ -128,36 +146,35 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   total: {
-    marginTop: 15,
-    paddingTop: 15,
+    marginTop: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: '#e5e7eb',
   },
   totalLabel: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: '#111827',
   },
   totalValue: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#4f46e5',
+    color: '#111827',
   },
   terms: {
     marginTop: 40,
-    padding: 20,
+    padding: 24,
     backgroundColor: '#f9fafb',
+    borderRadius: 8,
   },
   termsTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
     color: '#111827',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   termsText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6b7280',
-    marginBottom: 5,
+    marginBottom: 6,
+    lineHeight: 1.4,
   },
   footer: {
     position: 'absolute',
@@ -167,9 +184,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#9ca3af',
     fontSize: 10,
-    paddingTop: 10,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#f3f4f6',
+  },
+  notes: {
+    fontSize: 11,
+    color: '#6b7280',
+    lineHeight: 1.4,
   }
 });
 
@@ -202,6 +224,48 @@ const QuoteDocument: React.FC<QuotePDFProps> = ({ quoteInfo, services, totalPric
             <Image src={quoteInfo.designerLogo} style={styles.logo} />
           </View>
         )}
+      </View>
+
+      <View style={styles.infoGrid}>
+        <View style={styles.infoColumn}>
+          <Text style={styles.sectionTitle}>Información del Diseñador</Text>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Nombre</Text>
+            <Text style={styles.infoValue}>{quoteInfo.designerName}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Sitio Web</Text>
+            <Text style={styles.infoValue}>{quoteInfo.designerWebsite}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{quoteInfo.designerEmail}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Teléfono</Text>
+            <Text style={styles.infoValue}>{quoteInfo.designerPhone}</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoColumn}>
+          <Text style={styles.sectionTitle}>Información del Cliente</Text>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Nombre</Text>
+            <Text style={styles.infoValue}>{quoteInfo.clientName}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Empresa</Text>
+            <Text style={styles.infoValue}>{quoteInfo.clientCompany}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{quoteInfo.clientEmail}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Teléfono</Text>
+            <Text style={styles.infoValue}>{quoteInfo.clientPhone}</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -255,10 +319,19 @@ const QuoteDocument: React.FC<QuotePDFProps> = ({ quoteInfo, services, totalPric
         )}
 
         <View style={styles.total}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>${totalPrice.toLocaleString()} MXN</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>${totalPrice.toLocaleString()} MXN</Text>
+          </View>
         </View>
       </View>
+
+      {quoteInfo.notes && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notas Adicionales</Text>
+          <Text style={styles.notes}>{quoteInfo.notes}</Text>
+        </View>
+      )}
 
       <View style={styles.terms}>
         <Text style={styles.termsTitle}>Términos y Condiciones</Text>
