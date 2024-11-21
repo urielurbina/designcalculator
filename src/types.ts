@@ -32,6 +32,8 @@ export interface PriceBreakdown {
   maintenance: number;
   finalPrice: number;
   finalPriceUSD: number;
+  clientMultiplier?: number;
+  urgencyMultiplier?: number;
 }
 
 export interface QuoteInfo {
@@ -49,3 +51,11 @@ export interface QuoteInfo {
   validUntil: string;
   notes: string;
 }
+
+export interface Touchpoint {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export type PricingKey = keyof typeof import('./data/pricing');

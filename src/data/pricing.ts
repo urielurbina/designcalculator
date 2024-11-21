@@ -179,57 +179,13 @@ export const maintenanceFees = {
   'anual': 0.10
 } as const;
 
-export const standardDeliveryTimes = {
-  'identidad-corporativa': {
-    'logotipo-completo': 15,
-    'rediseno': 12,
-    'manual': 10,
-    'logotipo': 7,
-    'vectorizacion': 3,
-    'papeleria': 5,
-    'key-visual': 5,
-    'slogan': 3,
-    'naming': 5
-  },
-  'ilustracion': {
-    'personaje': 5,
-    'escena': 7,
-    'pattern': 3,
-    'iconos': 4
-  },
-  'publicidad-exterior': {
-    'espectacular': 7,
-    'parada-autobus': 5,
-    'valla': 6,
-    'vehicular': 5
-  },
-  'impresos': {
-    'folleto': 3,
-    'catalogo': 10,
-    'revista': 15,
-    'empaque': 12
-  },
-  'foto-video': {
-    'sesion-producto': 5,
-    'sesion-retrato': 3,
-    'video-corto': 7,
-    'video-corporativo': 15
-  },
-  'edicion-animacion': {
-    'edicion-basica': 3,
-    'motion-graphics': 7,
-    'animacion-2d': 10,
-    'animacion-3d': 15
-  },
-  'direccion': {
-    'direccion-arte': 15,
-    'consultoria': 10,
-    'estrategia': 12
-  },
-  'social-media': {
-    'pack-basico': 5,
-    'pack-premium': 8,
-    'pack-stories': 4,
-    'pack-reels': 7
-  }
-} as const;
+export type BaseRateKey = keyof typeof baseRates;
+export type ServiceOptionKey = keyof typeof serviceOptions;
+export type ExpertiseKey = keyof typeof expertiseMultipliers;
+export type ComplexityKey = keyof typeof complexityMultipliers;
+export type UrgencyKey = keyof typeof urgencyMultipliers;
+export type RightsKey = keyof typeof rightsMultipliers;
+export type ScopeKey = keyof typeof scopeMultipliers;
+export type VolumeDiscountKey = keyof typeof volumeDiscounts;
+export type ClientDiscountKey = keyof typeof clientDiscounts;
+export type MaintenanceFeeKey = keyof typeof maintenanceFees;

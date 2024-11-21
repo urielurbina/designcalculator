@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, HelpCircle } from 'lucide-react';
-import { serviceOptions, urgencyMultipliers, standardDeliveryTimes } from '../data/pricing';
+import { serviceOptions } from '../data/pricing';
 import { Service } from '../types';
 
 interface ServiceFormProps {
@@ -93,22 +93,13 @@ const categories = [
 
 export default function ServiceForm({ service, onChange, onAdd }: ServiceFormProps) {
   const handleCategoryChange = (category: string) => {
-    onChange('category', category);
     // Seleccionar el primer servicio de la nueva categoría
+    onChange('category', category);
     const firstService = serviceOptions[category]?.[0]?.value;
     if (firstService) {
       onChange('id', firstService);
     }
   };
-
-  const getStandardTime = () => {
-    if (service.category && service.id) {
-      return standardDeliveryTimes[service.category]?.[service.id] || 0;
-    }
-    return 0;
-  };
-
-  const standardTime = getStandardTime();
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
@@ -184,22 +175,16 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <TooltipLabel field="urgency" label="Urgencia" />
-            {standardTime > 0 && (
-              <span className="text-xs text-gray-500 ml-1">
-                (Estándar: {standardTime} días)
-              </span>
-            )}
           </label>
           <select
             value={service.urgency || 'estandar'}
             onChange={(e) => onChange('urgency', e.target.value)}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            {Object.entries(urgencyMultipliers).map(([key, data]) => (
-              <option key={key} value={key}>
-                {data.label}
-              </option>
-            ))}
+            <option value="estandar">Estándar (1.0x)</option>
+            <option value="reducido">Tiempo Reducido (1.35x)</option>
+            <option value="urgente">Urgente (1.75x)</option>
+            <option value="inmediato">Inmediato (2.5x)</option>
           </select>
         </div>
 
