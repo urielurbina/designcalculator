@@ -407,7 +407,7 @@ export const serviceOptions: ServiceOptions = {
   'moda': [
     { value: 'coleccion', label: 'Colección' },
     { value: 'tech-pack', label: 'Tech Pack' },
-    { value: 'lookbook', label: ' lookbook', label: 'Lookbook' },
+    { value: 'lookbook', label: 'Lookbook' },
     { value: 'moodboard', label: 'Moodboard' },
     { value: 'figurin', label: 'Figurín' },
     { value: 'patron-textil', label: 'Patrón Textil' },
