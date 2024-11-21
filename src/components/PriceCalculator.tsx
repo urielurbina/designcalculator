@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { useCalculator } from '../hooks/useCalculator';
-import { Service } from '../types';
+import { Service, VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 import QuoteForm from './QuoteForm';
 import QuotePDF from './QuotePDF';
 import ServiceForm from './ServiceForm';
@@ -168,7 +168,7 @@ export default function PriceCalculator() {
                 </label>
                 <select
                   value={volumeDiscount}
-                  onChange={(e) => setVolumeDiscount(e.target.value)}
+                  onChange={(e) => setVolumeDiscount(e.target.value as VolumeDiscountType)}
                   className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="none">Sin descuento</option>
@@ -187,7 +187,7 @@ export default function PriceCalculator() {
                 </label>
                 <select
                   value={clientType}
-                  onChange={(e) => setClientType(e.target.value)}
+                  onChange={(e) => setClientType(e.target.value as ClientDiscountType)}
                   className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="normal">Cliente Nuevo</option>
@@ -205,7 +205,7 @@ export default function PriceCalculator() {
                 </label>
                 <select
                   value={maintenance}
-                  onChange={(e) => setMaintenance(e.target.value)}
+                  onChange={(e) => setMaintenance(e.target.value as MaintenanceType)}
                   className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="none">Sin mantenimiento</option>

@@ -9,10 +9,11 @@ import {
   Image,
   Font,
 } from '@react-pdf/renderer';
-import { QuoteInfo, SelectedService } from '../types';
 import { FileDown } from 'lucide-react';
+import { QuoteInfo, SelectedService } from '../types';
 import { volumeDiscounts, clientDiscounts, maintenanceFees } from '../data/pricing';
 import { Currency } from '../hooks/useCalculator';
+import { VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 
 Font.register({
   family: 'Helvetica',
@@ -224,9 +225,9 @@ interface QuotePDFProps {
   };
   currency: Currency;
   discounts: {
-    volume: string;
-    client: string;
-    maintenance: string;
+    volume: VolumeDiscountType;
+    client: ClientDiscountType;
+    maintenance: MaintenanceType;
   };
   terms: string[];
 }
@@ -344,21 +345,27 @@ const QuoteDocument: React.FC<QuotePDFProps> = ({
           {discounts.volume !== 'none' && (
             <View style={styles.priceRow}>
               <Text style={styles.label}>Descuento por Volumen</Text>
-              <Text style={styles.value}>-{volumeDiscounts[discounts.volume] * 100}%</Text>
+              <Text style={styles.value}>
+                -{(volumeDiscounts[discounts.volume] * 100)}%
+              </Text>
             </View>
           )}
 
           {discounts.client !== 'normal' && (
             <View style={styles.priceRow}>
               <Text style={styles.label}>Descuento Cliente</Text>
-              <Text style={styles.value}>-{clientDiscounts[discounts.client] * 100}%</Text>
+              <Text style={styles.value}>
+                -{(clientDiscounts[discounts.client] * 100)}%
+              </Text>
             </View>
           )}
 
           {discounts.maintenance !== 'none' && (
             <View style={styles.priceRow}>
               <Text style={styles.label}>Mantenimiento</Text>
-              <Text style={styles.value}>+{maintenanceFees[discounts.maintenance] * 100}%</Text>
+              <Text style={styles.value}>
+                +{(maintenanceFees[discounts.maintenance] * 100)}%
+              </Text>
             </View>
           )}
 

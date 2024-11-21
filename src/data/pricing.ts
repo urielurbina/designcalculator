@@ -1,60 +1,19 @@
-import { ServiceCategory, ServiceId, ServiceOptions, BaseRates } from '../types';
+import { 
+  VolumeDiscountType, 
+  ClientDiscountType, 
+  MaintenanceType,
+  ServiceCategory,
+  ServiceId,
+  ComplexityLevel,
+  UrgencyLevel,
+  RightsLevel,
+  ScopeLevel,
+  ExpertiseLevel,
+  ServiceOptions,
+  BaseRates
+} from '../types';
 
-export const complexityMultipliers = {
-  simple: 1,
-  moderado: 1.5,
-  complejo: 2,
-  premium: 2.5
-} as const;
-
-export const urgencyMultipliers = {
-  estandar: { value: 1, days: 14 },
-  rapido: { value: 1.5, days: 7 },
-  urgente: { value: 2, days: 3 },
-  inmediato: { value: 2.5, days: 1 }
-} as const;
-
-export const rightsMultipliers = {
-  pequena: 1,
-  profesional: 1.5,
-  empresarial: 2,
-  corporativo: 2.5
-} as const;
-
-export const scopeMultipliers = {
-  personal: 1,
-  'comercial-local': 1.5,
-  'comercial-nacional': 2,
-  'comercial-internacional': 2.5
-} as const;
-
-export const expertiseMultipliers = {
-  junior: 0.8,
-  mid: 1,
-  senior: 1.5,
-  expert: 2
-} as const;
-
-export const volumeDiscounts = {
-  'none': 0,
-  '2-3': 0.1,
-  '4-5': 0.15,
-  '6+': 0.2
-} as const;
-
-export const clientDiscounts = {
-  'normal': 0,
-  'recurrente': 0.05,
-  'vip': 0.1
-} as const;
-
-export const maintenanceFees = {
-  'none': 0,
-  'mensual': 0.2,
-  'trimestral': 0.15,
-  'anual': 0.1
-} as const;
-
+// Base rates for different service categories
 export const baseRates: BaseRates = {
   'identidad-corporativa': {
     'logotipo-completo': 25000,
@@ -70,31 +29,31 @@ export const baseRates: BaseRates = {
   'ilustracion': {
     'personaje': 8000,
     'escena': 12000,
-    'pattern': 5000,
-    'iconos': 3000
+    'pattern': 6000,
+    'iconos': 4000
   },
   'publicidad-exterior': {
     'espectacular': 15000,
-    'parada-autobus': 8000,
-    'valla': 10000,
-    'vehicular': 12000
+    'parada-autobus': 10000,
+    'valla': 12000,
+    'vehicular': 8000
   },
   'impresos': {
-    'folleto': 5000,
+    'folleto': 6000,
     'catalogo': 15000,
     'revista': 20000,
-    'empaque': 18000
+    'empaque': 12000
   },
   'foto-video': {
     'sesion-producto': 8000,
     'sesion-retrato': 6000,
-    'video-corto': 15000,
+    'video-corto': 12000,
     'video-corporativo': 25000
   },
   'edicion-animacion': {
     'edicion-basica': 5000,
     'motion-graphics': 12000,
-    'animacion-2d': 18000,
+    'animacion-2d': 15000,
     'animacion-3d': 25000
   },
   'direccion': {
@@ -103,21 +62,22 @@ export const baseRates: BaseRates = {
     'estrategia': 18000
   },
   'social-media': {
-    'feed-mensual': 8000,
-    'historias-mensual': 6000,
-    'reels-mensual': 12000,
-    'pack-completo': 20000
+    'feed-mensual': 12000,
+    'historias-mensual': 8000,
+    'reels-mensual': 15000,
+    'pack-completo': 30000
   }
 };
 
+// Service options for each category
 export const serviceOptions: ServiceOptions = {
   'identidad-corporativa': [
-    { value: 'logotipo-completo', label: 'Nuevo Logotipo/Isologo + Manual + 5 Aplicaciones' },
-    { value: 'rediseno', label: 'Rediseño Identidad Corporativa' },
-    { value: 'manual', label: 'Manual de Identidad' },
-    { value: 'logotipo', label: 'Logotipo' },
-    { value: 'vectorizacion', label: 'Vectorización de Logo' },
-    { value: 'papeleria', label: 'Diseño de Papelería' },
+    { value: 'logotipo-completo', label: 'Logotipo Completo + Manual' },
+    { value: 'rediseno', label: 'Rediseño de Marca' },
+    { value: 'manual', label: 'Manual de Marca' },
+    { value: 'logotipo', label: 'Solo Logotipo' },
+    { value: 'vectorizacion', label: 'Vectorización' },
+    { value: 'papeleria', label: 'Papelería Corporativa' },
     { value: 'key-visual', label: 'Key Visual' },
     { value: 'slogan', label: 'Slogan' },
     { value: 'naming', label: 'Naming' }
@@ -135,10 +95,10 @@ export const serviceOptions: ServiceOptions = {
     { value: 'vehicular', label: 'Rotulación Vehicular' }
   ],
   'impresos': [
-    { value: 'folleto', label: 'Folleto/Flyer' },
+    { value: 'folleto', label: 'Folleto' },
     { value: 'catalogo', label: 'Catálogo' },
     { value: 'revista', label: 'Revista' },
-    { value: 'empaque', label: 'Diseño de Empaque' }
+    { value: 'empaque', label: 'Empaque' }
   ],
   'foto-video': [
     { value: 'sesion-producto', label: 'Sesión de Producto' },
@@ -163,4 +123,61 @@ export const serviceOptions: ServiceOptions = {
     { value: 'reels-mensual', label: 'Reels Mensuales' },
     { value: 'pack-completo', label: 'Pack Completo' }
   ]
+};
+
+// Multipliers for different aspects
+export const complexityMultipliers: Record<ComplexityLevel, number> = {
+  'simple': 1,
+  'moderado': 1.5,
+  'complejo': 2,
+  'premium': 2.5
+};
+
+export const urgencyMultipliers: Record<UrgencyLevel, { value: number; days: number }> = {
+  'estandar': { value: 1, days: 14 },
+  'rapido': { value: 1.5, days: 7 },
+  'urgente': { value: 2, days: 3 },
+  'inmediato': { value: 2.5, days: 1 }
+};
+
+export const rightsMultipliers: Record<RightsLevel, number> = {
+  'pequena': 1,
+  'profesional': 1.5,
+  'empresarial': 2,
+  'corporativo': 2.5
+};
+
+export const scopeMultipliers: Record<ScopeLevel, number> = {
+  'personal': 1,
+  'comercial-local': 1.5,
+  'comercial-nacional': 2,
+  'comercial-internacional': 2.5
+};
+
+export const expertiseMultipliers: Record<ExpertiseLevel, number> = {
+  'junior': 0.8,
+  'mid': 1,
+  'senior': 1.5,
+  'expert': 2
+};
+
+// Discount and fee structures
+export const volumeDiscounts: Record<VolumeDiscountType, number> = {
+  'none': 0,
+  '2-3': 0.1,
+  '4-5': 0.15,
+  '6+': 0.2
+};
+
+export const clientDiscounts: Record<ClientDiscountType, number> = {
+  'normal': 0,
+  'recurrente': 0.05,
+  'vip': 0.1
+};
+
+export const maintenanceFees: Record<MaintenanceType, number> = {
+  'none': 0,
+  'mensual': 0.2,
+  'trimestral': 0.15,
+  'anual': 0.1
 };
