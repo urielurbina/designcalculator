@@ -34,8 +34,8 @@ export default function PriceCalculator() {
     id: 'logotipo',
     complexity: 'simple',
     urgency: 'estandar',
-    rights: 'personal',
-    scope: 'basico',
+    rights: 'pequena',
+    scope: 'personal',
     expertise: 'mid',
     quantity: 1
   });
@@ -93,8 +93,8 @@ export default function PriceCalculator() {
         id: 'logotipo',
         complexity: 'simple',
         urgency: 'estandar',
-        rights: 'personal',
-        scope: 'basico',
+        rights: 'pequena',
+        scope: 'personal',
         expertise: 'mid',
         quantity: 1
       });

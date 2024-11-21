@@ -26,6 +26,10 @@ export type RightsLevel = 'pequena' | 'profesional' | 'empresarial' | 'corporati
 export type ScopeLevel = 'personal' | 'comercial-local' | 'comercial-nacional' | 'comercial-internacional';
 export type ExpertiseLevel = 'junior' | 'mid' | 'senior' | 'expert';
 
+export type VolumeDiscountType = 'none' | '2-3' | '4-5' | '6+';
+export type ClientDiscountType = 'normal' | 'recurrente' | 'vip';
+export type MaintenanceType = 'none' | 'mensual' | 'trimestral' | 'anual';
+
 export interface Service {
   id: ServiceId;
   name?: string;
@@ -45,12 +49,12 @@ export interface ServiceOption {
 }
 
 export interface ServiceOptions {
-  [K in ServiceCategory]: ServiceOption[];
+  [key: string]: ServiceOption[];
 }
 
 export interface BaseRates {
-  [K in ServiceCategory]: {
-    [key in ServiceId]?: number;
+  [key: string]: {
+    [key: string]: number;
   };
 }
 
@@ -76,6 +80,8 @@ export interface PriceBreakdown {
   maintenance: number;
   finalPrice: number;
   finalPriceUSD: number;
+  clientMultiplier: number;
+  urgencyMultiplier: number;
 }
 
 // Touchpoint Types
@@ -99,7 +105,7 @@ export interface QuoteInfo {
   designerWebsite: string;
   designerEmail: string;
   designerPhone: string;
-  designerLogo?: string;
+  designerLogo: string;
 
   // Client Info
   clientName: string;
@@ -112,22 +118,4 @@ export interface QuoteInfo {
   quoteDate: string;
   validUntil: string;
   notes: string;
-}
-
-// Brand Diagnostic Types
-export interface DiagnosticQuestion {
-  category: string;
-  text: string;
-}
-
-export interface BrandLead {
-  name: string;
-  brand_name: string;
-  whatsapp: string;
-  email: string;
-  state: string;
-  diagnostic_score: number;
-  submitted_at?: string;
-  status?: 'pending' | 'contacted' | 'converted' | 'rejected';
-  notes?: string;
 }

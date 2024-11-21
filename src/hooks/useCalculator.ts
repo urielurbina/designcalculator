@@ -11,17 +11,17 @@ import {
   serviceOptions,
   expertiseMultipliers
 } from '../data/pricing';
-import { Service, SelectedService, ServiceCategory, ServiceId } from '../types';
-
-export type Currency = 'MXN' | 'USD';
+import { Service, SelectedService, VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 
 const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
 
+export type Currency = 'MXN' | 'USD';
+
 export function useCalculator() {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
-  const [volumeDiscount, setVolumeDiscount] = useState('none');
-  const [clientType, setClientType] = useState('normal');
-  const [maintenance, setMaintenance] = useState('none');
+  const [volumeDiscount, setVolumeDiscount] = useState<VolumeDiscountType>('none');
+  const [clientType, setClientType] = useState<ClientDiscountType>('normal');
+  const [maintenance, setMaintenance] = useState<MaintenanceType>('none');
   const [currency, setCurrency] = useState<Currency>('MXN');
 
   const calculateServicePrice = useCallback((service: Service): SelectedService => {
@@ -48,7 +48,7 @@ export function useCalculator() {
         ...service,
         name: serviceName,
         basePrice,
-        description: service.description || '',
+        description: '',
         finalPrice,
         finalPriceUSD,
         breakdown: {
@@ -62,11 +62,13 @@ export function useCalculator() {
           clientDiscount: 0,
           maintenance: 0,
           finalPrice,
-          finalPriceUSD
+          finalPriceUSD,
+          clientMultiplier: rightsMultiplier,
+          urgencyMultiplier: urgencyMultiplier
         }
       };
     } catch (error) {
-      console.error('Error calculating price:', error);
+      console.error('Error calculando precio:', error);
       return {
         ...service,
         name: 'Error en el servicio',
@@ -85,7 +87,9 @@ export function useCalculator() {
           clientDiscount: 0,
           maintenance: 0,
           finalPrice: 0,
-          finalPriceUSD: 0
+          finalPriceUSD: 0,
+          clientMultiplier: 1,
+          urgencyMultiplier: 1
         }
       };
     }
@@ -101,11 +105,7 @@ export function useCalculator() {
   }, []);
 
   const updateService = useCallback((index: number, service: SelectedService) => {
-    setSelectedServices(prev => {
-      const newServices = [...prev];
-      newServices[index] = service;
-      return newServices;
-    });
+    setSelectedServices(prev => prev.map((s, i) => i === index ? service : s));
   }, []);
 
   const getTotalPrice = useCallback(() => {
@@ -114,14 +114,11 @@ export function useCalculator() {
     const clientDiscountMultiplier = 1 - (clientDiscounts[clientType] || 0);
     const maintenanceMultiplier = 1 + (maintenanceFees[maintenance] || 0);
 
-    const finalPriceMXN = Math.round(
-      subtotal * volumeDiscountMultiplier * clientDiscountMultiplier * maintenanceMultiplier
-    );
-    const finalPriceUSD = Math.round(finalPriceMXN / MXN_TO_USD);
-
+    const total = subtotal * volumeDiscountMultiplier * clientDiscountMultiplier * maintenanceMultiplier;
+    
     return {
-      mxn: finalPriceMXN,
-      usd: finalPriceUSD
+      mxn: Math.round(total),
+      usd: Math.round(total / MXN_TO_USD)
     };
   }, [selectedServices, volumeDiscount, clientType, maintenance]);
 
