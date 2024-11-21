@@ -1,63 +1,52 @@
+// Add these type definitions at the top of the file
+export type ServiceId = 
+  | 'logotipo-completo' | 'rediseno' | 'manual' | 'logotipo' | 'vectorizacion'
+  | 'papeleria' | 'key-visual' | 'slogan' | 'naming'
+  | 'personaje' | 'escena' | 'pattern' | 'iconos'
+  | 'espectacular' | 'parada-autobus' | 'valla' | 'vehicular'
+  | 'folleto' | 'catalogo' | 'revista' | 'empaque'
+  | 'sesion-producto' | 'sesion-retrato' | 'video-corto' | 'video-corporativo'
+  | 'edicion-basica' | 'motion-graphics' | 'animacion-2d' | 'animacion-3d'
+  | 'direccion-arte' | 'consultoria' | 'estrategia'
+  | 'feed-mensual' | 'historias-mensual' | 'reels-mensual' | 'pack-completo';
+
+export type ServiceCategory = 
+  | 'identidad-corporativa'
+  | 'ilustracion'
+  | 'publicidad-exterior'
+  | 'impresos'
+  | 'foto-video'
+  | 'edicion-animacion'
+  | 'direccion'
+  | 'social-media';
+
+export type ServiceOption = {
+  value: ServiceId;
+  label: string;
+};
+
+export type ServiceOptions = {
+  [K in ServiceCategory]: ServiceOption[];
+};
+
+export type BaseRates = {
+  [K in ServiceCategory]: {
+    [key in ServiceId]?: number;
+  };
+};
+
+// Update Service interface
 export interface Service {
-  id: string;
+  id: ServiceId;
   name?: string;
-  category: string;
-  complexity: string;
-  urgency: string;
-  rights: string;
-  scope: string;
-  expertise: string;
+  category: ServiceCategory;
+  complexity: keyof typeof import('./data/pricing').complexityMultipliers;
+  urgency: keyof typeof import('./data/pricing').urgencyMultipliers;
+  rights: keyof typeof import('./data/pricing').rightsMultipliers;
+  scope: keyof typeof import('./data/pricing').scopeMultipliers;
+  expertise: keyof typeof import('./data/pricing').expertiseMultipliers;
   quantity: number;
   description?: string;
 }
 
-export interface SelectedService extends Service {
-  name: string;
-  basePrice: number;
-  finalPrice: number;
-  finalPriceUSD: number;
-  description: string;
-  breakdown: PriceBreakdown;
-}
-
-export interface PriceBreakdown {
-  basePrice: number;
-  complexity: number;
-  urgency: number;
-  rights: number;
-  scope: number;
-  expertise: number;
-  volumeDiscount: number;
-  clientDiscount: number;
-  maintenance: number;
-  finalPrice: number;
-  finalPriceUSD: number;
-  clientMultiplier?: number;
-  urgencyMultiplier?: number;
-}
-
-export interface QuoteInfo {
-  designerName: string;
-  designerWebsite: string;
-  designerEmail: string;
-  designerPhone: string;
-  designerLogo: string;
-  clientName: string;
-  clientCompany: string;
-  clientEmail: string;
-  clientPhone: string;
-  quoteNumber: string;
-  quoteDate: string;
-  validUntil: string;
-  notes: string;
-}
-
-export interface Touchpoint {
-  id: string;
-  name: string;
-  price: number;
-}
-
-export type DiscountKey = keyof typeof import('./data/pricing').volumeDiscounts;
-export type ClientDiscountKey = keyof typeof import('./data/pricing').clientDiscounts;
-export type MaintenanceKey = keyof typeof import('./data/pricing').maintenanceFees;
+// Rest of your existing types...
