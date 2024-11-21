@@ -13,9 +13,8 @@ import {
 } from '../data/pricing';
 import { Service, SelectedService } from '../types';
 
-const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
-
 export type Currency = 'MXN' | 'USD';
+const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
 
 export function useCalculator() {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
@@ -26,27 +25,21 @@ export function useCalculator() {
 
   const calculateServicePrice = useCallback((service: Service): SelectedService => {
     try {
-      if (!baseRates[service.category] || !baseRates[service.category][service.id]) {
-        throw new Error(`Servicio no encontrado: ${service.category}.${service.id}`);
-      }
-
-      const basePrice = baseRates[service.category][service.id];
-      const complexityMultiplier = complexityMultipliers[service.complexity] || 1;
-      const urgencyMultiplier = urgencyMultipliers[service.urgency]?.value || 1;
-      const rightsMultiplier = rightsMultipliers[service.rights] || 1;
-      const scopeMultiplier = scopeMultipliers[service.scope] || 1;
-      const expertiseMultiplier = expertiseMultipliers[service.expertise] || 1;
+      const basePrice = baseRates[service.category as keyof typeof baseRates]?.[service.id as string] || 0;
+      const complexityMultiplier = complexityMultipliers[service.complexity as keyof typeof complexityMultipliers] || 1;
+      const urgencyMultiplier = urgencyMultipliers[service.urgency as keyof typeof urgencyMultipliers]?.value || 1;
+      const rightsMultiplier = rightsMultipliers[service.rights as keyof typeof rightsMultipliers] || 1;
+      const scopeMultiplier = scopeMultipliers[service.scope as keyof typeof scopeMultipliers] || 1;
+      const expertiseMultiplier = expertiseMultipliers[service.expertise as keyof typeof expertiseMultipliers] || 1;
       const quantity = service.quantity || 1;
 
-      const unitPrice = basePrice * complexityMultiplier * urgencyMultiplier * 
-                     rightsMultiplier * scopeMultiplier * expertiseMultiplier;
-      
-      const totalPrice = unitPrice * quantity;
+      const price = basePrice * complexityMultiplier * urgencyMultiplier * 
+                   rightsMultiplier * scopeMultiplier * expertiseMultiplier * quantity;
 
       const serviceOption = serviceOptions[service.category]?.find(opt => opt.value === service.id);
       const serviceName = serviceOption?.label || service.id;
 
-      const finalPrice = Math.round(totalPrice);
+      const finalPrice = Math.round(price);
       const finalPriceUSD = Math.round(finalPrice / MXN_TO_USD);
 
       return {
@@ -118,12 +111,11 @@ export function useCalculator() {
   const getTotalPrice = useCallback(() => {
     if (selectedServices.length === 0) return { mxn: 0, usd: 0 };
 
-    let totalMXN = selectedServices.reduce((sum, service) => 
-      sum + service.finalPrice, 0);
+    let totalMXN = selectedServices.reduce((sum, service) => sum + service.finalPrice, 0);
     
     // Apply global discounts
-    const volumeDiscountRate = volumeDiscounts[volumeDiscount] || 0;
-    const clientDiscountRate = clientDiscounts[clientType] || 0;
+    const volumeDiscountRate = volumeDiscounts[volumeDiscount as keyof typeof volumeDiscounts] || 0;
+    const clientDiscountRate = clientDiscounts[clientType as keyof typeof clientDiscounts] || 0;
     const totalDiscount = volumeDiscountRate + clientDiscountRate;
     
     if (totalDiscount > 0) {
@@ -131,7 +123,7 @@ export function useCalculator() {
     }
     
     // Apply maintenance
-    const maintenanceFee = maintenanceFees[maintenance] || 0;
+    const maintenanceFee = maintenanceFees[maintenance as keyof typeof maintenanceFees] || 0;
     if (maintenanceFee > 0) {
       totalMXN = totalMXN * (1 + maintenanceFee);
     }

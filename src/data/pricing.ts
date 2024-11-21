@@ -37,7 +37,7 @@ export const baseRates = {
   'edicion-animacion': {
     'edicion-basica': 5000,
     'motion-graphics': 12000,
-    'animacion-2d': 15000,
+    'animacion-2d': 18000,
     'animacion-3d': 25000
   },
   'direccion': {
@@ -46,10 +46,10 @@ export const baseRates = {
     'estrategia': 18000
   },
   'social-media': {
-    'pack-basico': 8000,
-    'pack-premium': 15000,
-    'pack-stories': 6000,
-    'pack-reels': 12000
+    'feed-mensual': 12000,
+    'historias-mensual': 8000,
+    'reels-mensual': 15000,
+    'pack-completo': 25000
   }
 } as const;
 
@@ -97,14 +97,14 @@ export const serviceOptions = {
   ],
   'direccion': [
     { value: 'direccion-arte', label: 'Dirección de Arte' },
-    { value: 'consultoria', label: 'Consultoría de Marca' },
+    { value: 'consultoria', label: 'Consultoría' },
     { value: 'estrategia', label: 'Estrategia Visual' }
   ],
   'social-media': [
-    { value: 'pack-basico', label: 'Pack Básico (10 posts)' },
-    { value: 'pack-premium', label: 'Pack Premium (20 posts)' },
-    { value: 'pack-stories', label: 'Pack Stories (15 stories)' },
-    { value: 'pack-reels', label: 'Pack Reels (4 reels)' }
+    { value: 'feed-mensual', label: 'Contenido Feed (Mensual)' },
+    { value: 'historias-mensual', label: 'Contenido Stories (Mensual)' },
+    { value: 'reels-mensual', label: 'Contenido Reels (Mensual)' },
+    { value: 'pack-completo', label: 'Pack Completo Redes' }
   ]
 } as const;
 
@@ -159,33 +159,23 @@ export const scopeMultipliers = {
   'corporativo': 3.0
 } as const;
 
-export const volumeDiscounts = {
+// Add index signatures to the objects
+export const volumeDiscounts: { [key: string]: number } = {
   'none': 0,
   '2-3': 0.10,
   '4-5': 0.15,
   '6+': 0.20
 } as const;
 
-export const clientDiscounts = {
+export const clientDiscounts: { [key: string]: number } = {
   'normal': 0,
   'recurrente': 0.05,
   'vip': 0.10
 } as const;
 
-export const maintenanceFees = {
+export const maintenanceFees: { [key: string]: number } = {
   'none': 0,
   'mensual': 0.20,
   'trimestral': 0.15,
   'anual': 0.10
 } as const;
-
-export type BaseRateKey = keyof typeof baseRates;
-export type ServiceOptionKey = keyof typeof serviceOptions;
-export type ExpertiseKey = keyof typeof expertiseMultipliers;
-export type ComplexityKey = keyof typeof complexityMultipliers;
-export type UrgencyKey = keyof typeof urgencyMultipliers;
-export type RightsKey = keyof typeof rightsMultipliers;
-export type ScopeKey = keyof typeof scopeMultipliers;
-export type VolumeDiscountKey = keyof typeof volumeDiscounts;
-export type ClientDiscountKey = keyof typeof clientDiscounts;
-export type MaintenanceFeeKey = keyof typeof maintenanceFees;

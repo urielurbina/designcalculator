@@ -88,8 +88,6 @@ export default function PriceCalculator() {
   const handleAddService = () => {
     if (currentService.category && currentService.id) {
       addService(currentService as Service);
-      
-      // Reset form to default values
       setCurrentService({
         category: 'identidad-corporativa',
         id: 'logotipo',
@@ -100,8 +98,6 @@ export default function PriceCalculator() {
         expertise: 'mid',
         quantity: 1
       });
-
-      // Trigger scroll after service is added
       setShouldScroll(true);
     }
   };

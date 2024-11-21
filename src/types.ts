@@ -1,25 +1,12 @@
-import { 
-  BaseRateKey,
-  ServiceOptionKey,
-  ExpertiseKey,
-  ComplexityKey,
-  UrgencyKey,
-  RightsKey,
-  ScopeKey,
-  VolumeDiscountKey,
-  ClientDiscountKey,
-  MaintenanceFeeKey
-} from './data/pricing';
-
 export interface Service {
   id: string;
   name?: string;
-  category: BaseRateKey;
-  complexity: ComplexityKey;
-  urgency: UrgencyKey;
-  rights: RightsKey;
-  scope: ScopeKey;
-  expertise: ExpertiseKey;
+  category: string;
+  complexity: string;
+  urgency: string;
+  rights: string;
+  scope: string;
+  expertise: string;
   quantity: number;
   description?: string;
 }
@@ -45,6 +32,8 @@ export interface PriceBreakdown {
   maintenance: number;
   finalPrice: number;
   finalPriceUSD: number;
+  clientMultiplier?: number;
+  urgencyMultiplier?: number;
 }
 
 export interface QuoteInfo {
@@ -52,7 +41,7 @@ export interface QuoteInfo {
   designerWebsite: string;
   designerEmail: string;
   designerPhone: string;
-  designerLogo?: string;
+  designerLogo: string;
   clientName: string;
   clientCompany: string;
   clientEmail: string;
@@ -69,4 +58,6 @@ export interface Touchpoint {
   price: number;
 }
 
-export type PricingKey = keyof typeof import('./data/pricing');
+export type DiscountKey = keyof typeof import('./data/pricing').volumeDiscounts;
+export type ClientDiscountKey = keyof typeof import('./data/pricing').clientDiscounts;
+export type MaintenanceKey = keyof typeof import('./data/pricing').maintenanceFees;
