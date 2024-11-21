@@ -1,4 +1,4 @@
-// Add these type definitions at the top of the file
+// Service Types
 export type ServiceId = 
   | 'logotipo-completo' | 'rediseno' | 'manual' | 'logotipo' | 'vectorizacion'
   | 'papeleria' | 'key-visual' | 'slogan' | 'naming'
@@ -20,33 +20,114 @@ export type ServiceCategory =
   | 'direccion'
   | 'social-media';
 
-export type ServiceOption = {
-  value: ServiceId;
-  label: string;
-};
+export type ComplexityLevel = 'simple' | 'moderado' | 'complejo' | 'premium';
+export type UrgencyLevel = 'estandar' | 'rapido' | 'urgente' | 'inmediato';
+export type RightsLevel = 'pequena' | 'profesional' | 'empresarial' | 'corporativo';
+export type ScopeLevel = 'personal' | 'comercial-local' | 'comercial-nacional' | 'comercial-internacional';
+export type ExpertiseLevel = 'junior' | 'mid' | 'senior' | 'expert';
 
-export type ServiceOptions = {
-  [K in ServiceCategory]: ServiceOption[];
-};
-
-export type BaseRates = {
-  [K in ServiceCategory]: {
-    [key in ServiceId]?: number;
-  };
-};
-
-// Update Service interface
 export interface Service {
   id: ServiceId;
   name?: string;
   category: ServiceCategory;
-  complexity: keyof typeof import('./data/pricing').complexityMultipliers;
-  urgency: keyof typeof import('./data/pricing').urgencyMultipliers;
-  rights: keyof typeof import('./data/pricing').rightsMultipliers;
-  scope: keyof typeof import('./data/pricing').scopeMultipliers;
-  expertise: keyof typeof import('./data/pricing').expertiseMultipliers;
+  complexity: ComplexityLevel;
+  urgency: UrgencyLevel;
+  rights: RightsLevel;
+  scope: ScopeLevel;
+  expertise: ExpertiseLevel;
   quantity: number;
   description?: string;
 }
 
-// Rest of your existing types...
+export interface ServiceOption {
+  value: ServiceId;
+  label: string;
+}
+
+export interface ServiceOptions {
+  [K in ServiceCategory]: ServiceOption[];
+}
+
+export interface BaseRates {
+  [K in ServiceCategory]: {
+    [key in ServiceId]?: number;
+  };
+}
+
+export interface SelectedService extends Service {
+  name: string;
+  basePrice: number;
+  finalPrice: number;
+  finalPriceUSD: number;
+  description: string;
+  breakdown: PriceBreakdown;
+}
+
+// Pricing Types
+export interface PriceBreakdown {
+  basePrice: number;
+  complexity: number;
+  urgency: number;
+  rights: number;
+  scope: number;
+  expertise: number;
+  volumeDiscount: number;
+  clientDiscount: number;
+  maintenance: number;
+  finalPrice: number;
+  finalPriceUSD: number;
+}
+
+// Touchpoint Types
+export interface Touchpoint {
+  id: string;
+  name: string;
+  price: number;
+}
+
+// Category Types
+export interface Category {
+  id: string;
+  name: string;
+  services: Service[];
+}
+
+// Quote Types
+export interface QuoteInfo {
+  // Designer Info
+  designerName: string;
+  designerWebsite: string;
+  designerEmail: string;
+  designerPhone: string;
+  designerLogo?: string;
+
+  // Client Info
+  clientName: string;
+  clientCompany: string;
+  clientEmail: string;
+  clientPhone: string;
+
+  // Quote Details
+  quoteNumber: string;
+  quoteDate: string;
+  validUntil: string;
+  notes: string;
+}
+
+// Brand Diagnostic Types
+export interface DiagnosticQuestion {
+  category: string;
+  text: string;
+}
+
+export interface BrandLead {
+  name: string;
+  brand_name: string;
+  whatsapp: string;
+  email: string;
+  state: string;
+  diagnostic_score: number;
+  submitted_at?: string;
+  status?: 'pending' | 'contacted' | 'converted' | 'rejected';
+  notes?: string;
+}

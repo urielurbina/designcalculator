@@ -13,9 +13,9 @@ import {
 } from '../data/pricing';
 import { Service, SelectedService, ServiceCategory, ServiceId } from '../types';
 
-const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
-
 export type Currency = 'MXN' | 'USD';
+
+const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
 
 export function useCalculator() {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
@@ -48,7 +48,7 @@ export function useCalculator() {
         ...service,
         name: serviceName,
         basePrice,
-        description: '',
+        description: service.description || '',
         finalPrice,
         finalPriceUSD,
         breakdown: {
@@ -66,7 +66,7 @@ export function useCalculator() {
         }
       };
     } catch (error) {
-      console.error('Error calculando precio:', error);
+      console.error('Error calculating price:', error);
       return {
         ...service,
         name: 'Error en el servicio',
@@ -91,8 +91,40 @@ export function useCalculator() {
     }
   }, []);
 
-  // Rest of your code...
-  
+  const addService = useCallback((service: Service) => {
+    const calculatedService = calculateServicePrice(service);
+    setSelectedServices(prev => [...prev, calculatedService]);
+  }, [calculateServicePrice]);
+
+  const removeService = useCallback((index: number) => {
+    setSelectedServices(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updateService = useCallback((index: number, service: SelectedService) => {
+    setSelectedServices(prev => {
+      const newServices = [...prev];
+      newServices[index] = service;
+      return newServices;
+    });
+  }, []);
+
+  const getTotalPrice = useCallback(() => {
+    const subtotal = selectedServices.reduce((sum, service) => sum + service.finalPrice, 0);
+    const volumeDiscountMultiplier = 1 - (volumeDiscounts[volumeDiscount] || 0);
+    const clientDiscountMultiplier = 1 - (clientDiscounts[clientType] || 0);
+    const maintenanceMultiplier = 1 + (maintenanceFees[maintenance] || 0);
+
+    const finalPriceMXN = Math.round(
+      subtotal * volumeDiscountMultiplier * clientDiscountMultiplier * maintenanceMultiplier
+    );
+    const finalPriceUSD = Math.round(finalPriceMXN / MXN_TO_USD);
+
+    return {
+      mxn: finalPriceMXN,
+      usd: finalPriceUSD
+    };
+  }, [selectedServices, volumeDiscount, clientType, maintenance]);
+
   return {
     selectedServices,
     volumeDiscount,
