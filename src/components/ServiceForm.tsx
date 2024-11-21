@@ -48,13 +48,17 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
 
   const categories = [
     { value: 'identidad-corporativa' as ServiceCategory, label: 'Identidad Corporativa' },
-    { value: 'marketing' as ServiceCategory, label: 'Marketing' },
-    { value: 'editorial' as ServiceCategory, label: 'Diseño Editorial' },
-    { value: 'web' as ServiceCategory, label: 'Diseño Web' },
     { value: 'ilustracion' as ServiceCategory, label: 'Ilustración' },
-    { value: 'fotografia' as ServiceCategory, label: 'Fotografía' },
-    { value: 'audiovisual' as ServiceCategory, label: 'Audiovisual' },
+    { value: 'publicidad-exterior' as ServiceCategory, label: 'Publicidad Exterior' },
+    { value: 'impresos' as ServiceCategory, label: 'Impresos' },
+    { value: 'foto-video' as ServiceCategory, label: 'Foto y Video' },
+    { value: 'edicion-animacion' as ServiceCategory, label: 'Edición y Animación' },
+    { value: 'editorial' as ServiceCategory, label: 'Editorial' },
+    { value: 'web' as ServiceCategory, label: 'Diseño Web' },
+    { value: 'marketing' as ServiceCategory, label: 'Marketing' },
     { value: 'social-media' as ServiceCategory, label: 'Social Media' },
+    { value: 'audiovisual' as ServiceCategory, label: 'Audiovisual' },
+    { value: 'fotografia' as ServiceCategory, label: 'Fotografía' },
     { value: 'moda' as ServiceCategory, label: 'Diseño de Moda' }
   ];
 

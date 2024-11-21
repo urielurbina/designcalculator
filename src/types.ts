@@ -1,13 +1,35 @@
 // Service Types
 export type ServiceId = 
   // Identidad Corporativa
-  | 'logotipo' | 'identidad-basica' | 'identidad-completa' | 'rediseno' | 'brand-book'
-  | 'naming' | 'brandscape' | 'brand-voice' | 'submarca' | 'trademark' | 'auditoria'
-  | 'arquetipos' | 'estrategia-marca'
+  | 'logotipo-completo' | 'rediseno' | 'manual' | 'logotipo' | 'vectorizacion'
+  | 'papeleria' | 'key-visual' | 'slogan' | 'naming' | 'brand-book' | 'brandscape'
+  | 'brand-voice' | 'submarca' | 'trademark' | 'auditoria' | 'arquetipos'
+  | 'estrategia-marca' | 'identidad-basica' | 'identidad-completa'
+  // Ilustración
+  | 'boceto-personaje' | 'ilustracion-2d-bn' | 'ilustracion-2d-color' | 'avatar'
+  | 'objetos-accesorios' | 'pagina-historieta' | 'colorizacion' | 'fondos'
+  | 'ilustracion-3d' | 'mano-alzada' | 'vectorial' | 'infografia' | 'personaje'
+  | 'mascota' | 'patron' | 'iconos' | 'editorial' | 'arte-conceptual' | 'storyboard'
+  | 'mapa' | 'portada' | 'producto' | 'tecnico'
+  // Publicidad Exterior
+  | 'pendon' | 'senaletica' | 'valla' | 'valla-movil' | 'rotulacion-pequena'
+  | 'rotulacion-mediana' | 'rotulacion-grande' | 'rotulacion-completa'
+  | 'pantalla-led' | 'lona' | 'banderola'
+  // Impresos
+  | 'poster' | 'aviso' | 'bolsa' | 'empaque' | 'catalogo' | 'correo'
+  | 'diagramacion' | 'diseno-libro' | 'diseno-revista' | 'portada' | 'exhibidor'
+  | 'folleto' | 'invitacion' | 'brochure' | 'programa' | 'totem' | 'volante'
+  // Foto y Video
+  | 'sesion-foto' | 'foto-producto' | 'retoque' | 'video-rrss' | 'drone-dia'
+  | 'drone-hora' | 'evento' | 'food-styling' | 'camarografo' | 'sonidista'
+  | 'video-corporativo' | 'video-croma' | 'video-youtube'
+  // Edición y Animación
+  | 'animacion-creditos' | 'animacion-brochure' | 'animacion-textos' | 'pack-rrss'
+  | 'colorizacion-video' | 'musica' | 'vfx' | 'edicion' | 'gif' | 'subtitulos'
+  | 'video-2d' | 'video-mixto' | 'rotoscopia'
   // Editorial
   | 'libro-comercial' | 'libro-arte' | 'revista' | 'catalogo-comercial' | 'catalogo-premium'
   | 'memoria-anual' | 'whitepaper' | 'newsletter' | 'editorial-digital' | 'maquetacion'
-  | 'portada' | 'infografia'
   // Web
   | 'webapp-basica' | 'webapp-completa' | 'ecommerce' | 'landing-page' | 'app-design'
   | 'dashboard' | 'portal-corporativo' | 'intranet' | 'optimizacion' | 'mantenimiento'
@@ -28,22 +50,23 @@ export type ServiceId =
   | 'producto-basico' | 'producto-premium' | 'gastronomica' | 'retratos' | 'evento-medio'
   | 'evento-completo' | 'lookbook' | 'arquitectura' | 'aereas' | 'banco-imagenes'
   | 'lifestyle' | 'ecommerce'
-  // Ilustración
-  | 'personaje' | 'mascota' | 'patron' | 'iconos' | 'editorial' | 'arte-conceptual'
-  | 'storyboard' | 'mapa' | 'infografia' | 'portada' | 'producto' | 'tecnico'
   // Moda
   | 'coleccion' | 'tech-pack' | 'lookbook' | 'moodboard' | 'figurin' | 'patron-textil'
   | 'marca-moda' | 'catalogo' | 'flat-sketch' | 'portfolio' | 'campana' | 'etiquetas';
 
 export type ServiceCategory = 
   | 'identidad-corporativa'
+  | 'ilustracion'
+  | 'publicidad-exterior'
+  | 'impresos'
+  | 'foto-video'
+  | 'edicion-animacion'
   | 'editorial'
   | 'web'
   | 'marketing'
   | 'social-media'
   | 'audiovisual'
   | 'fotografia'
-  | 'ilustracion'
   | 'moda';
 
 export type ComplexityLevel = 'simple' | 'moderado' | 'complejo' | 'premium';
