@@ -48,13 +48,14 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
 
   const categories = [
     { value: 'identidad-corporativa' as ServiceCategory, label: 'Identidad Corporativa' },
+    { value: 'marketing' as ServiceCategory, label: 'Marketing' },
+    { value: 'editorial' as ServiceCategory, label: 'Diseño Editorial' },
+    { value: 'web' as ServiceCategory, label: 'Diseño Web' },
     { value: 'ilustracion' as ServiceCategory, label: 'Ilustración' },
-    { value: 'publicidad-exterior' as ServiceCategory, label: 'Publicidad Exterior' },
-    { value: 'impresos' as ServiceCategory, label: 'Impresos' },
-    { value: 'foto-video' as ServiceCategory, label: 'Fotografía y Video' },
-    { value: 'edicion-animacion' as ServiceCategory, label: 'Edición y Animación' },
-    { value: 'direccion' as ServiceCategory, label: 'Dirección' },
-    { value: 'social-media' as ServiceCategory, label: 'Social Media' }
+    { value: 'fotografia' as ServiceCategory, label: 'Fotografía' },
+    { value: 'audiovisual' as ServiceCategory, label: 'Audiovisual' },
+    { value: 'social-media' as ServiceCategory, label: 'Social Media' },
+    { value: 'moda' as ServiceCategory, label: 'Diseño de Moda' }
   ];
 
   const complexityLevels: { value: ComplexityLevel; label: string }[] = [

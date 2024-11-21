@@ -1,24 +1,50 @@
 // Service Types
 export type ServiceId = 
-  | 'logotipo-completo' | 'rediseno' | 'manual' | 'logotipo' | 'vectorizacion'
-  | 'papeleria' | 'key-visual' | 'slogan' | 'naming'
-  | 'personaje' | 'escena' | 'pattern' | 'iconos'
-  | 'espectacular' | 'parada-autobus' | 'valla' | 'vehicular'
-  | 'folleto' | 'catalogo' | 'revista' | 'empaque'
-  | 'sesion-producto' | 'sesion-retrato' | 'video-corto' | 'video-corporativo'
-  | 'edicion-basica' | 'motion-graphics' | 'animacion-2d' | 'animacion-3d'
-  | 'direccion-arte' | 'consultoria' | 'estrategia'
-  | 'feed-mensual' | 'historias-mensual' | 'reels-mensual' | 'pack-completo';
+  // Identidad Corporativa
+  | 'logotipo' | 'identidad-basica' | 'identidad-completa' | 'rediseno' | 'brand-book'
+  | 'naming' | 'brandscape' | 'brand-voice' | 'submarca' | 'trademark' | 'auditoria'
+  | 'arquetipos' | 'estrategia-marca'
+  // Editorial
+  | 'libro-comercial' | 'libro-arte' | 'revista' | 'catalogo-comercial' | 'catalogo-premium'
+  | 'memoria-anual' | 'whitepaper' | 'newsletter' | 'editorial-digital' | 'maquetacion'
+  | 'portada' | 'infografia'
+  // Web
+  | 'webapp-basica' | 'webapp-completa' | 'ecommerce' | 'landing-page' | 'app-design'
+  | 'dashboard' | 'portal-corporativo' | 'intranet' | 'optimizacion' | 'mantenimiento'
+  | 'prototipo' | 'ui-kit'
+  // Marketing
+  | 'campana-completa' | 'campana-digital' | 'campana-print' | 'merchandising' | 'packaging'
+  | 'punto-venta' | 'stand' | 'presentacion' | 'brochure-digital' | 'brochure-impreso'
+  | 'media-kit' | 'pitch-deck'
+  // Social Media
+  | 'pack-basico' | 'pack-completo' | 'estrategia-social' | 'calendario-editorial'
+  | 'video-redes' | 'reel' | 'pack-historias' | 'contenido-blog' | 'contenido-newsletter'
+  | 'pack-publicidad' | 'copywriting' | 'contenido-seo'
+  // Audiovisual
+  | 'video-corporativo' | 'video-producto' | 'documental' | 'motion-graphics' | 'animacion-3d'
+  | 'video-comercial' | 'video-evento' | 'video-educativo' | 'podcast-setup' | 'pack-streaming'
+  | 'demo-reel' | 'video-aereo'
+  // Fotografía
+  | 'producto-basico' | 'producto-premium' | 'gastronomica' | 'retratos' | 'evento-medio'
+  | 'evento-completo' | 'lookbook' | 'arquitectura' | 'aereas' | 'banco-imagenes'
+  | 'lifestyle' | 'ecommerce'
+  // Ilustración
+  | 'personaje' | 'mascota' | 'patron' | 'iconos' | 'editorial' | 'arte-conceptual'
+  | 'storyboard' | 'mapa' | 'infografia' | 'portada' | 'producto' | 'tecnico'
+  // Moda
+  | 'coleccion' | 'tech-pack' | 'lookbook' | 'moodboard' | 'figurin' | 'patron-textil'
+  | 'marca-moda' | 'catalogo' | 'flat-sketch' | 'portfolio' | 'campana' | 'etiquetas';
 
 export type ServiceCategory = 
   | 'identidad-corporativa'
+  | 'editorial'
+  | 'web'
+  | 'marketing'
+  | 'social-media'
+  | 'audiovisual'
+  | 'fotografia'
   | 'ilustracion'
-  | 'publicidad-exterior'
-  | 'impresos'
-  | 'foto-video'
-  | 'edicion-animacion'
-  | 'direccion'
-  | 'social-media';
+  | 'moda';
 
 export type ComplexityLevel = 'simple' | 'moderado' | 'complejo' | 'premium';
 export type UrgencyLevel = 'estandar' | 'rapido' | 'urgente' | 'inmediato';
