@@ -16,18 +16,18 @@ import {
 // Base rates for different service categories
 export const baseRates: BaseRates = {
   'identidad-corporativa': {
-    'logotipo': 5000,
+    'logotipo': 4000,
     'identidad-basica': 5000,
     'identidad-completa': 8000,
-    'rediseno': 6000,
-    'brand-book': 10000,
-    'naming': 3000,
+    'rediseno': 5000,
+    'brand-book': 5000,
+    'naming': 2000,
     'brandscape': 4000,
     'brand-voice': 3000,
     'submarca': 2500,
     'trademark': 1500,
-    'auditoria': 3500,
-    'arquetipos': 2000,
+    'auditoria': 1000,
+    'arquetipos': 500,
     'estrategia-marca': 7000
   },
   'editorial': {
@@ -73,12 +73,12 @@ export const baseRates: BaseRates = {
     'pitch-deck': 4000
   },
   'social-media': {
-    'pack-basico': 3500,
-    'pack-completo': 6000,
-    'estrategia-social': 4000,
+    'pack-basico': 1500,
+    'pack-completo': 3000,
+    'estrategia-social': 2000,
     'calendario-editorial': 2500,
-    'video-redes': 3000,
-    'reel': 2000,
+    'video-redes': 500,
+    'reel': 300,
     'pack-historias': 1500,
     'contenido-blog': 2000,
     'contenido-newsletter': 1500,
