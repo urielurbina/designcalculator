@@ -7,11 +7,12 @@ import {
   StyleSheet,
   PDFDownloadLink,
   Image,
-  Font
+  Font,
 } from '@react-pdf/renderer';
 import { QuoteInfo, SelectedService } from '../types';
 import { FileDown } from 'lucide-react';
 import { volumeDiscounts, clientDiscounts, maintenanceFees } from '../data/pricing';
+import { Currency } from '../hooks/useCalculator';
 
 Font.register({
   family: 'Helvetica',
@@ -112,10 +113,23 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 13,
     color: '#111827',
+    flex: 1,
   },
-  servicePrice: {
+  serviceQuantity: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginRight: 16,
+  },
+  servicePrices: {
+    alignItems: 'flex-end',
+  },
+  servicePriceMXN: {
     fontSize: 13,
     color: '#111827',
+  },
+  servicePriceUSD: {
+    fontSize: 11,
+    color: '#6b7280',
   },
   serviceDescription: {
     fontSize: 11,
@@ -159,6 +173,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
   },
+  totalValueUSD: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'right',
+    marginTop: 2,
+  },
   terms: {
     marginTop: 40,
     padding: 24,
@@ -198,7 +218,11 @@ const styles = StyleSheet.create({
 interface QuotePDFProps {
   quoteInfo: QuoteInfo;
   services: SelectedService[];
-  totalPrice: number;
+  totalPrice: {
+    mxn: number;
+    usd: number;
+  };
+  currency: Currency;
   discounts: {
     volume: string;
     client: string;
@@ -207,147 +231,170 @@ interface QuotePDFProps {
   terms: string[];
 }
 
-const QuoteDocument: React.FC<QuotePDFProps> = ({ quoteInfo, services, totalPrice, discounts, terms }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.title}>Cotización</Text>
-          <Text style={styles.quoteNumber}>#{quoteInfo.quoteNumber}</Text>
-          <View style={styles.dates}>
-            <Text>Fecha: {quoteInfo.quoteDate}</Text>
-            <Text>Válido hasta: {quoteInfo.validUntil}</Text>
-          </View>
-        </View>
-        {quoteInfo.designerLogo && (
-          <View style={styles.headerRight}>
-            <Image src={quoteInfo.designerLogo} style={styles.logo} />
-          </View>
-        )}
-      </View>
+const QuoteDocument: React.FC<QuotePDFProps> = ({ 
+  quoteInfo, 
+  services, 
+  totalPrice, 
+  currency,
+  discounts, 
+  terms 
+}) => {
+  const getDisplayPrice = (price: { mxn: number; usd: number }) => {
+    const value = currency === 'MXN' ? price.mxn : price.usd;
+    return `$${value.toLocaleString(currency === 'MXN' ? 'es-MX' : 'en-US')} ${currency}`;
+  };
 
-      <View style={styles.infoGrid}>
-        <View style={styles.infoColumn}>
-          <Text style={styles.sectionTitle}>Información del Diseñador</Text>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Nombre</Text>
-            <Text style={styles.infoValue}>{quoteInfo.designerName}</Text>
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>Cotización</Text>
+            <Text style={styles.quoteNumber}>#{quoteInfo.quoteNumber}</Text>
+            <View style={styles.dates}>
+              <Text>Fecha: {quoteInfo.quoteDate}</Text>
+              <Text>Válido hasta: {quoteInfo.validUntil}</Text>
+            </View>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Sitio Web</Text>
-            <Text style={styles.infoValue}>{quoteInfo.designerWebsite}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{quoteInfo.designerEmail}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Teléfono</Text>
-            <Text style={styles.infoValue}>{quoteInfo.designerPhone}</Text>
-          </View>
+          {quoteInfo.designerLogo && (
+            <View style={styles.headerRight}>
+              <Image src={quoteInfo.designerLogo} style={styles.logo} />
+            </View>
+          )}
         </View>
 
-        <View style={styles.infoColumn}>
-          <Text style={styles.sectionTitle}>Información del Cliente</Text>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Nombre</Text>
-            <Text style={styles.infoValue}>{quoteInfo.clientName}</Text>
+        <View style={styles.infoGrid}>
+          <View style={styles.infoColumn}>
+            <Text style={styles.sectionTitle}>Información del Diseñador</Text>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Nombre</Text>
+              <Text style={styles.infoValue}>{quoteInfo.designerName}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Sitio Web</Text>
+              <Text style={styles.infoValue}>{quoteInfo.designerWebsite}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <Text style={styles.infoValue}>{quoteInfo.designerEmail}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Teléfono</Text>
+              <Text style={styles.infoValue}>{quoteInfo.designerPhone}</Text>
+            </View>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Empresa</Text>
-            <Text style={styles.infoValue}>{quoteInfo.clientCompany}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{quoteInfo.clientEmail}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Teléfono</Text>
-            <Text style={styles.infoValue}>{quoteInfo.clientPhone}</Text>
+
+          <View style={styles.infoColumn}>
+            <Text style={styles.sectionTitle}>Información del Cliente</Text>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Nombre</Text>
+              <Text style={styles.infoValue}>{quoteInfo.clientName}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Empresa</Text>
+              <Text style={styles.infoValue}>{quoteInfo.clientCompany}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <Text style={styles.infoValue}>{quoteInfo.clientEmail}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Teléfono</Text>
+              <Text style={styles.infoValue}>{quoteInfo.clientPhone}</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Servicios</Text>
-        {services.map((service, index) => (
-          <View key={index} style={styles.serviceItem}>
-            <View style={styles.serviceHeader}>
-              <Text style={styles.serviceName}>{service.name}</Text>
-              <Text style={styles.servicePrice}>
-                ${service.finalPrice.toLocaleString()}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Servicios</Text>
+          {services.map((service, index) => (
+            <View key={index} style={styles.serviceItem}>
+              <View style={styles.serviceHeader}>
+                <Text style={styles.serviceName}>{service.name}</Text>
+                <Text style={styles.serviceQuantity}>
+                  Cantidad: {service.quantity || 1}
+                </Text>
+                <View style={styles.servicePrices}>
+                  <Text style={styles.servicePriceMXN}>
+                    {getDisplayPrice({ mxn: service.finalPrice, usd: service.finalPriceUSD })}
+                  </Text>
+                </View>
+              </View>
+              {service.description && (
+                <Text style={styles.serviceDescription}>
+                  {service.description}
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.priceBreakdown}>
+          <Text style={styles.sectionTitle}>Resumen de Precios</Text>
+          
+          <View style={styles.priceRow}>
+            <Text style={styles.label}>Subtotal</Text>
+            <View style={styles.servicePrices}>
+              <Text style={styles.value}>
+                {getDisplayPrice(totalPrice)}
               </Text>
             </View>
-            {service.description && (
-              <Text style={styles.serviceDescription}>
-                {service.description}
-              </Text>
-            )}
           </View>
-        ))}
-      </View>
 
-      <View style={styles.priceBreakdown}>
-        <Text style={styles.sectionTitle}>Resumen de Precios</Text>
-        
-        <View style={styles.priceRow}>
-          <Text style={styles.label}>Subtotal</Text>
-          <Text style={styles.value}>
-            ${services.reduce((sum, s) => sum + s.finalPrice, 0).toLocaleString()}
+          {discounts.volume !== 'none' && (
+            <View style={styles.priceRow}>
+              <Text style={styles.label}>Descuento por Volumen</Text>
+              <Text style={styles.value}>-{volumeDiscounts[discounts.volume] * 100}%</Text>
+            </View>
+          )}
+
+          {discounts.client !== 'normal' && (
+            <View style={styles.priceRow}>
+              <Text style={styles.label}>Descuento Cliente</Text>
+              <Text style={styles.value}>-{clientDiscounts[discounts.client] * 100}%</Text>
+            </View>
+          )}
+
+          {discounts.maintenance !== 'none' && (
+            <View style={styles.priceRow}>
+              <Text style={styles.label}>Mantenimiento</Text>
+              <Text style={styles.value}>+{maintenanceFees[discounts.maintenance] * 100}%</Text>
+            </View>
+          )}
+
+          <View style={styles.total}>
+            <View style={styles.priceRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>
+                {getDisplayPrice(totalPrice)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {quoteInfo.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notas Adicionales</Text>
+            <Text style={styles.notes}>{quoteInfo.notes}</Text>
+          </View>
+        )}
+
+        <View style={styles.terms}>
+          <Text style={styles.termsTitle}>Términos y Condiciones</Text>
+          {terms.map((term, index) => (
+            <Text key={index} style={styles.termsText}>• {term}</Text>
+          ))}
+        </View>
+
+        <View style={styles.footer}>
+          <Text>
+            Esta cotización es válida hasta el {quoteInfo.validUntil}
           </Text>
         </View>
-
-        {discounts.volume !== 'none' && (
-          <View style={styles.priceRow}>
-            <Text style={styles.label}>Descuento por Volumen</Text>
-            <Text style={styles.value}>-{volumeDiscounts[discounts.volume] * 100}%</Text>
-          </View>
-        )}
-
-        {discounts.client !== 'normal' && (
-          <View style={styles.priceRow}>
-            <Text style={styles.label}>Descuento Cliente</Text>
-            <Text style={styles.value}>-{clientDiscounts[discounts.client] * 100}%</Text>
-          </View>
-        )}
-
-        {discounts.maintenance !== 'none' && (
-          <View style={styles.priceRow}>
-            <Text style={styles.label}>Mantenimiento</Text>
-            <Text style={styles.value}>+{maintenanceFees[discounts.maintenance] * 100}%</Text>
-          </View>
-        )}
-
-        <View style={styles.total}>
-          <View style={styles.priceRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>${totalPrice.toLocaleString()} MXN</Text>
-          </View>
-        </View>
-      </View>
-
-      {quoteInfo.notes && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notas Adicionales</Text>
-          <Text style={styles.notes}>{quoteInfo.notes}</Text>
-        </View>
-      )}
-
-      <View style={styles.terms}>
-        <Text style={styles.termsTitle}>Términos y Condiciones</Text>
-        {terms.map((term, index) => (
-          <Text key={index} style={styles.termsText}>• {term}</Text>
-        ))}
-      </View>
-
-      <View style={styles.footer}>
-        <Text>
-          Esta cotización es válida hasta el {quoteInfo.validUntil}
-        </Text>
-      </View>
-    </Page>
-  </Document>
-);
+      </Page>
+    </Document>
+  );
+};
 
 const QuotePDF: React.FC<QuotePDFProps> = (props) => {
   return (

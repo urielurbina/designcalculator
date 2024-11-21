@@ -5,7 +5,7 @@ import { Service } from '../types';
 
 interface ServiceFormProps {
   service: Partial<Service>;
-  onChange: (field: keyof Service, value: string) => void;
+  onChange: (field: keyof Service, value: string | number) => void;
   onAdd: () => void;
 }
 
@@ -52,12 +52,49 @@ const tooltips = {
       
       El tipo de empresa influye en la complejidad y alcance requeridos
     `
+  },
+  expertise: {
+    title: "Nivel de Expertise",
+    content: `
+      • Junior: Diseñador en formación o inicio de carrera (0.7x)
+      • Mid-Level: Diseñador con experiencia intermedia (1.0x)
+      • Senior: Diseñador experto con amplia experiencia (1.4x)
+      
+      El nivel afecta directamente al precio base del servicio
+    `
   }
 };
+
+const TooltipLabel = ({ field, label }: { field: keyof typeof tooltips, label: string }) => (
+  <div className="group relative inline-flex items-center gap-1">
+    {label}
+    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+    <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-72 z-10">
+      <div className="bg-gray-900 text-white p-3 rounded-lg shadow-lg text-sm">
+        <h5 className="font-medium mb-1">{tooltips[field].title}</h5>
+        <div className="text-gray-200 whitespace-pre-line text-xs">
+          {tooltips[field].content}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const categories = [
+  { value: 'identidad-corporativa', label: 'Identidad Corporativa' },
+  { value: 'ilustracion', label: 'Ilustración' },
+  { value: 'publicidad-exterior', label: 'Publicidad Exterior' },
+  { value: 'impresos', label: 'Impresos' },
+  { value: 'foto-video', label: 'Fotografía y Video' },
+  { value: 'edicion-animacion', label: 'Edición y Animación' },
+  { value: 'direccion', label: 'Dirección' },
+  { value: 'social-media', label: 'Social Media' }
+];
 
 export default function ServiceForm({ service, onChange, onAdd }: ServiceFormProps) {
   const handleCategoryChange = (category: string) => {
     onChange('category', category);
+    // Seleccionar el primer servicio de la nueva categoría
     const firstService = serviceOptions[category]?.[0]?.value;
     if (firstService) {
       onChange('id', firstService);
@@ -73,21 +110,6 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
 
   const standardTime = getStandardTime();
 
-  const TooltipLabel = ({ field, label }: { field: keyof typeof tooltips, label: string }) => (
-    <div className="group relative inline-flex items-center gap-1">
-      {label}
-      <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-      <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-72 z-10 touch:block md:touch:hidden">
-        <div className="bg-gray-900 text-white p-3 rounded-lg shadow-lg text-sm">
-          <h5 className="font-medium mb-1">{tooltips[field].title}</h5>
-          <div className="text-gray-200 whitespace-pre-line text-xs">
-            {tooltips[field].content}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Agregar Servicio</h3>
@@ -98,18 +120,15 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
             Categoría
           </label>
           <select
-            value={service.category || 'identidad-corporativa'}
+            value={service.category || ''}
             onChange={(e) => handleCategoryChange(e.target.value)}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            <option value="identidad-corporativa">Identidad Corporativa</option>
-            <option value="ilustracion">Ilustración</option>
-            <option value="publicidad-exterior">Publicidad Exterior</option>
-            <option value="impresos">Impresos</option>
-            <option value="foto-video">Fotografía y Video</option>
-            <option value="edicion-animacion">Edición y Animación</option>
-            <option value="direccion">Dirección</option>
-            <option value="social-media">Social Media</option>
+            {categories.map(category => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -127,6 +146,21 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
                 {option.label}
               </option>
             ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <TooltipLabel field="expertise" label="Nivel de Expertise" />
+          </label>
+          <select
+            value={service.expertise || 'mid'}
+            onChange={(e) => onChange('expertise', e.target.value)}
+            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="junior">Junior (0.7x)</option>
+            <option value="mid">Mid-Level (1.0x)</option>
+            <option value="senior">Senior (1.4x)</option>
           </select>
         </div>
 
@@ -167,11 +201,6 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
               </option>
             ))}
           </select>
-          {service.urgency && service.urgency !== 'estandar' && standardTime > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              Tiempo estimado: {Math.ceil(standardTime * (1 - (urgencyMultipliers[service.urgency as keyof typeof urgencyMultipliers].value - 1)))} días
-            </p>
-          )}
         </div>
 
         <div>

@@ -6,6 +6,8 @@ export interface Service {
   urgency: string;
   rights: string;
   scope: string;
+  expertise: string;
+  quantity: number;
   description?: string;
 }
 
@@ -13,14 +15,9 @@ export interface SelectedService extends Service {
   name: string;
   basePrice: number;
   finalPrice: number;
+  finalPriceUSD: number;
   description: string;
   breakdown: PriceBreakdown;
-}
-
-export interface Touchpoint {
-  id: string;
-  name: string;
-  price: number;
 }
 
 export interface PriceBreakdown {
@@ -29,33 +26,24 @@ export interface PriceBreakdown {
   urgency: number;
   rights: number;
   scope: number;
+  expertise: number;
   volumeDiscount: number;
   clientDiscount: number;
   maintenance: number;
   finalPrice: number;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  services: Service[];
+  finalPriceUSD: number;
 }
 
 export interface QuoteInfo {
-  // Designer Info
   designerName: string;
   designerWebsite: string;
   designerEmail: string;
   designerPhone: string;
   designerLogo?: string;
-
-  // Client Info
   clientName: string;
   clientCompany: string;
   clientEmail: string;
   clientPhone: string;
-
-  // Quote Details
   quoteNumber: string;
   quoteDate: string;
   validUntil: string;

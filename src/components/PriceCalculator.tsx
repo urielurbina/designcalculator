@@ -18,9 +18,11 @@ export default function PriceCalculator() {
     volumeDiscount,
     clientType,
     maintenance,
+    currency,
     setVolumeDiscount,
     setClientType,
     setMaintenance,
+    setCurrency,
     addService,
     removeService,
     updateService,
@@ -33,7 +35,9 @@ export default function PriceCalculator() {
     complexity: 'simple',
     urgency: 'estandar',
     rights: 'personal',
-    scope: 'basico'
+    scope: 'basico',
+    expertise: 'mid',
+    quantity: 1
   });
 
   const [showQuoteForm, setShowQuoteForm] = useState(false);
@@ -77,7 +81,7 @@ export default function PriceCalculator() {
     }
   }, [shouldScroll, selectedServices]);
 
-  const handleServiceChange = (field: keyof Service, value: string) => {
+  const handleServiceChange = (field: keyof Service, value: string | number) => {
     setCurrentService(prev => ({ ...prev, [field]: value }));
   };
 
@@ -92,7 +96,9 @@ export default function PriceCalculator() {
         complexity: 'simple',
         urgency: 'estandar',
         rights: 'personal',
-        scope: 'basico'
+        scope: 'basico',
+        expertise: 'mid',
+        quantity: 1
       });
 
       // Trigger scroll after service is added
@@ -150,6 +156,9 @@ export default function PriceCalculator() {
               services={selectedServices}
               onRemoveService={removeService}
               onUpdateService={updateService}
+              totalPrice={totalPrice}
+              currency={currency}
+              onCurrencyChange={setCurrency}
             />
 
             {/* Global Options */}
@@ -247,6 +256,7 @@ export default function PriceCalculator() {
                   quoteInfo={quoteInfo}
                   services={selectedServices}
                   totalPrice={totalPrice}
+                  currency={currency}
                   discounts={{
                     volume: volumeDiscount,
                     client: clientType,

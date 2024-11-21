@@ -1,55 +1,66 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Usar variables de entorno para las credenciales
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Faltan las credenciales de Supabase en las variables de entorno');
+  throw new Error('Las variables de entorno de Supabase no están configuradas');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-interface SubscriptionData {
-  email: string;
-  name: string;
-}
-
-export async function subscribeEmail({ email, name }: SubscriptionData) {
-  // Verificar si el email ya existe
-  const { data: existing } = await supabase
-    .from('subscriptions')
-    .select('id')
-    .eq('email', email)
-    .single();
-
-  if (existing) {
-    throw new Error('Este email ya está suscrito');
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+  db: {
+    schema: 'public'
   }
+});
 
-  // Insertar nueva suscripción
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .insert([
-      { 
-        email,
-        name,
-        subscribed_at: new Date().toISOString(),
-        status: 'active'
-      }
-    ])
-    .select();
+export async function subscribeEmail(data: { email: string; name: string }) {
+  try {
+    const { data: existing } = await supabase
+      .from('subscriptions')
+      .select('id')
+      .eq('email', data.email)
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (existing) {
+      throw new Error('Este email ya está suscrito');
+    }
+
+    const { error } = await supabase
+      .from('subscriptions')
+      .insert([
+        { 
+          email: data.email,
+          name: data.name,
+          subscribed_at: new Date().toISOString(),
+          status: 'active'
+        }
+      ]);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Error al procesar la suscripción');
+  }
 }
 
 export async function unsubscribeEmail(email: string) {
-  const { error } = await supabase
-    .from('subscriptions')
-    .update({ status: 'unsubscribed' })
-    .eq('email', email);
+  try {
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({ status: 'unsubscribed' })
+      .eq('email', email);
 
-  if (error) throw error;
-  return true;
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    throw new Error('Error al procesar la baja');
+  }
 }

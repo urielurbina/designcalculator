@@ -55,7 +55,7 @@ export default function QuestionSlide({ question, onAnswer }: QuestionSlideProps
               </span>
             </div>
             <div className="w-6 h-6 rounded-full border-2 border-[#333] 
-                         group-hover:border-white group-hover:bg-white 
+                         group-hover:border-white group-hover:bg-white/10
                          group-hover:ring-2 group-hover:ring-white/20 transition-all" />
           </motion.button>
         ))}
