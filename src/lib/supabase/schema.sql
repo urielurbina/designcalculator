@@ -49,3 +49,33 @@ alter table public.brand_leads
 alter table public.brand_leads
   add constraint brand_leads_status_check
   check (status in ('pending', 'contacted', 'converted', 'rejected'));
+
+-- Create statistics table
+create table if not exists public.estadistica (
+  id uuid default gen_random_uuid() primary key,
+  pdfs_generados integer default 0,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Insert initial row if not exists
+insert into public.estadistica (pdfs_generados)
+select 0
+where not exists (select 1 from public.estadistica);
+
+-- Enable Row Level Security (RLS)
+alter table public.estadistica enable row level security;
+
+-- Create policy to allow updates
+create policy "Allow anonymous updates"
+  on public.estadistica
+  for update
+  to anon
+  using (true)
+  with check (true);
+
+-- Create policy to allow selects
+create policy "Allow anonymous selects"
+  on public.estadistica
+  for select
+  to anon
+  using (true);

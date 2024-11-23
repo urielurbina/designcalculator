@@ -14,6 +14,7 @@ import { QuoteInfo, SelectedService } from '../types';
 import { volumeDiscounts, clientDiscounts, maintenanceFees } from '../data/pricing';
 import { Currency } from '../hooks/useCalculator';
 import { VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
+import { incrementPDFCount } from '../services/statisticsService';
 
 Font.register({
   family: 'Helvetica',
@@ -404,12 +405,29 @@ const QuoteDocument: React.FC<QuotePDFProps> = ({
 };
 
 const QuotePDF: React.FC<QuotePDFProps> = (props) => {
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
+  const handleDownload = async () => {
+    if (isDownloading) return;
+    
+    setIsDownloading(true);
+    try {
+      await incrementPDFCount();
+    } catch (error) {
+      console.error('Error incrementing PDF count:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="flex justify-center">
       <PDFDownloadLink
         document={<QuoteDocument {...props} />}
         fileName={`cotizacion-${props.quoteInfo.quoteNumber}.pdf`}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        className={`bg-indigo-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2
+          ${isDownloading ? 'bg-indigo-500 cursor-wait' : 'hover:bg-indigo-700'}`}
+        onClick={handleDownload}
       >
         {({ loading }) => (
           <>
