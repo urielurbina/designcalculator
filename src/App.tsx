@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import PromoBanner from './components/PromoBanner';
 import LandingPage from './components/LandingPage';
 import PriceCalculator from './components/PriceCalculator';
 import FreelanceCalculator from './components/FreelanceCalculator';
@@ -16,6 +17,7 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {!isDiagnosticPage && <PromoBanner />}
       {!isDiagnosticPage && <Navbar />}
       <main className="flex-grow">
         <Routes>
