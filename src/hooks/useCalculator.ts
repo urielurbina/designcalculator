@@ -68,7 +68,7 @@ export function useCalculator() {
         }
       };
     } catch (error) {
-      console.error('Error calculando precio:', error);
+      console.error('Error calculating price:', error);
       return {
         ...service,
         name: 'Error en el servicio',
@@ -135,6 +135,7 @@ export function useCalculator() {
     addService,
     removeService,
     updateService,
-    getTotalPrice
+    getTotalPrice,
+    calculateServicePrice
   };
 }

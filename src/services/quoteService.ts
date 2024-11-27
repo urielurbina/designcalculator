@@ -14,40 +14,98 @@ export interface QuoteData {
   client_type?: ClientDiscountType;
   maintenance?: MaintenanceType;
   notes?: string;
+  client?: {
+    name: string;
+    company?: string;
+    email: string;
+    phone?: string;
+  };
 }
 
 // Mock data for development
-const mockQuotes = [
-  {
-    id: '1',
-    quote_number: 'COT-2024-0001',
-    created_at: new Date().toISOString(),
-    client: {
-      name: 'Alice Johnson',
-      company: 'Tech Corp'
-    },
-    total_amount: 15000,
-    currency: 'MXN',
-    status: 'draft'
-  },
-  {
-    id: '2',
-    quote_number: 'COT-2024-0002',
-    created_at: new Date().toISOString(),
-    client: {
-      name: 'Bob Smith',
-      company: 'Design Studio'
-    },
-    total_amount: 25000,
-    currency: 'MXN',
-    status: 'sent'
+const mockQuoteData: QuoteData = {
+  id: '1',
+  client_id: '1',
+  quote_number: 'QT-2024001',
+  total_amount: 15000,
+  currency: 'MXN',
+  status: 'draft',
+  services: [
+    {
+      id: 'logotipo',
+      category: 'identidad-corporativa',
+      name: 'Logotipo Básico',
+      complexity: 'simple',
+      urgency: 'estandar',
+      rights: 'pequena',
+      scope: 'personal',
+      expertise: 'mid',
+      quantity: 1,
+      basePrice: 8000,
+      finalPrice: 8000,
+      finalPriceUSD: 400,
+      description: 'Diseño de logotipo básico con 2 propuestas',
+      breakdown: {
+        basePrice: 8000,
+        complexity: 1,
+        urgency: 1,
+        rights: 1,
+        scope: 1,
+        expertise: 1,
+        volumeDiscount: 0,
+        clientDiscount: 0,
+        maintenance: 0,
+        finalPrice: 8000,
+        finalPriceUSD: 400,
+        clientMultiplier: 1,
+        urgencyMultiplier: 1
+      }
+    }
+  ],
+  terms: [
+    'Los precios no incluyen IVA (16%)',
+    'Cotización válida por 30 días',
+    '50% de anticipo para iniciar el proyecto'
+  ],
+  client: {
+    name: 'John Doe',
+    company: 'ACME Inc',
+    email: 'john@acme.com',
+    phone: '+1234567890'
   }
-];
+};
 
-export async function getQuotes() {
+export async function getQuote(id: string): Promise<QuoteData> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return mockQuotes; // Return mock data if no user
+    if (!user) return mockQuoteData;
+
+    const { data, error } = await supabase
+      .from('quotes')
+      .select(`
+        *,
+        client:clients(name, company, email, phone)
+      `)
+      .eq('id', id)
+      .eq('freelancer_id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching quote:', error);
+      return mockQuoteData;
+    }
+
+    return data || mockQuoteData;
+  } catch (error) {
+    console.error('Error in getQuote:', error);
+    return mockQuoteData;
+  }
+}
+
+export async function getQuotes(): Promise<QuoteData[]> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [mockQuoteData];
 
     const { data, error } = await supabase
       .from('quotes')
@@ -60,13 +118,13 @@ export async function getQuotes() {
 
     if (error) {
       console.error('Error fetching quotes:', error);
-      return mockQuotes; // Return mock data on error
+      return [mockQuoteData];
     }
 
-    return data.length > 0 ? data : mockQuotes;
+    return data.length > 0 ? data : [mockQuoteData];
   } catch (error) {
     console.error('Error in getQuotes:', error);
-    return mockQuotes;
+    return [mockQuoteData];
   }
 }
 
@@ -88,7 +146,6 @@ export async function createQuote(quoteData: Omit<QuoteData, 'id'>) {
     return data;
   } catch (error) {
     console.error('Error in createQuote:', error);
-    // Return a mock response for development
     return {
       id: Date.now().toString(),
       ...quoteData,
@@ -117,7 +174,6 @@ export async function updateQuote(id: string, quoteData: Partial<QuoteData>) {
     return data;
   } catch (error) {
     console.error('Error in updateQuote:', error);
-    // Return a mock response for development
     return {
       id,
       ...quoteData,
@@ -162,7 +218,6 @@ export async function generateQuoteNumber() {
     return `COT-${year}-${nextNumber.toString().padStart(4, '0')}`;
   } catch (error) {
     console.error('Error generating quote number:', error);
-    // Fallback quote number
     return `COT-${Date.now()}`;
   }
 }

@@ -5,7 +5,6 @@ import {
   Search, 
   Filter,
   FileText,
-  MoreVertical,
   Edit2,
   Trash2,
   Download,
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import NewQuoteForm from '../components/quote/NewQuoteForm';
+import EditQuoteForm from '../components/quote/EditQuoteForm';
 import FreelancerForm from '../components/quote/FreelancerForm';
 import ClientsPanel from '../components/quote/ClientsPanel';
 import PDFDesignPanel from '../components/quote/PDFDesignPanel';
@@ -42,6 +42,7 @@ export default function Cotizar() {
   const { user, signOut } = useAuth();
   const [activePanel, setActivePanel] = useState<ActivePanel>('quotes');
   const [isCreating, setIsCreating] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Quote['status'] | 'all'>('all');
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -96,6 +97,19 @@ export default function Cotizar() {
     );
   }
 
+  if (editingQuoteId) {
+    return (
+      <EditQuoteForm 
+        quoteId={editingQuoteId}
+        onClose={() => {
+          setEditingQuoteId(null);
+          loadQuotes();
+        }}
+      />
+    );
+  }
+
+  // Rest of the component remains unchanged...
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -324,6 +338,7 @@ export default function Cotizar() {
                               <Download className="w-5 h-5" />
                             </button>
                             <button
+                              onClick={() => setEditingQuoteId(quote.id)}
                               className="text-gray-600 hover:text-gray-900"
                               title="Editar"
                             >
