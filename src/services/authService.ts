@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 
 export interface AuthError {
   message: string;
@@ -14,7 +14,7 @@ export interface AuthResponse {
 
 export async function signInWithGoogle(): Promise<AuthResponse> {
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data: oAuthData, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
@@ -31,14 +31,15 @@ export async function signInWithGoogle(): Promise<AuthResponse> {
         session: null,
         error: {
           message: error.message,
-          status: error.status
+          status: (error as SupabaseAuthError).status
         }
       };
     }
 
+    // Since OAuth sign-in redirects, we won't have immediate access to user/session
     return {
-      user: data?.user || null,
-      session: data?.session || null,
+      user: null,
+      session: null,
       error: null
     };
   } catch (error) {
@@ -60,7 +61,7 @@ export async function signOut(): Promise<{ error: AuthError | null }> {
       return {
         error: {
           message: error.message,
-          status: error.status
+          status: (error as SupabaseAuthError).status
         }
       };
     }
@@ -85,7 +86,7 @@ export async function getCurrentSession(): Promise<AuthResponse> {
         session: null,
         error: {
           message: error.message,
-          status: error.status
+          status: (error as SupabaseAuthError).status
         }
       };
     }
