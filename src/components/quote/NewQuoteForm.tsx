@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, Building2, Plus } from 'lucide-react';
 import QuoteCalculator from './QuoteCalculator';
 import { getClients } from '../../services/clientService';
+import { getFreelancerProfile } from '../../services/freelancerService';
 import type { ClientData } from '../../services/clientService';
+import type { FreelancerData } from '../../services/freelancerService';
 
 interface NewQuoteFormProps {
   onClose: () => void;
@@ -11,26 +13,31 @@ interface NewQuoteFormProps {
 export default function NewQuoteForm({ onClose }: NewQuoteFormProps) {
   const [clients, setClients] = useState<ClientData[]>([]);
   const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
+  const [freelancerData, setFreelancerData] = useState<FreelancerData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadClients();
-  }, []);
-
-  async function loadClients() {
-    try {
-      setLoading(true);
-      const data = await getClients();
-      setClients(data);
-    } catch (err) {
-      console.error('Error loading clients:', err);
-      setError('Error al cargar los clientes');
-    } finally {
-      setLoading(false);
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [clientsData, freelancerProfile] = await Promise.all([
+          getClients(),
+          getFreelancerProfile()
+        ]);
+        setClients(clientsData);
+        setFreelancerData(freelancerProfile);
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Error al cargar los datos');
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    loadData();
+  }, []);
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,6 +125,14 @@ export default function NewQuoteForm({ onClose }: NewQuoteFormProps) {
     );
   }
 
+  if (!freelancerData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-5xl mx-auto px-4">
@@ -138,6 +153,13 @@ export default function NewQuoteForm({ onClose }: NewQuoteFormProps) {
         </div>
 
         <QuoteCalculator
+          freelancerData={{
+            name: freelancerData.name,
+            website: freelancerData.website || '',
+            email: freelancerData.email,
+            phone: freelancerData.phone || '',
+            logoUrl: freelancerData.logo_url || ''
+          }}
           clientData={{
             name: selectedClient.name,
             company: selectedClient.company || '',
