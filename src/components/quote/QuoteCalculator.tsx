@@ -16,7 +16,7 @@ interface QuoteCalculatorProps {
     logoUrl: string;
   };
   clientData: {
-    id: string; // Added client ID
+    id: string;
     name: string;
     company: string;
     email: string;
