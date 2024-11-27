@@ -91,6 +91,11 @@ export default function QuoteCalculator({
   };
 
   const handleGenerateQuote = async () => {
+    if (selectedServices.length === 0) {
+      setError('Agrega al menos un servicio a la cotización');
+      return;
+    }
+
     try {
       setSaving(true);
       setError(null);
@@ -179,7 +184,7 @@ export default function QuoteCalculator({
           <div className="mt-8">
             <button
               onClick={handleGenerateQuote}
-              disabled={saving}
+              disabled={saving || selectedServices.length === 0}
               className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 
                        transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >

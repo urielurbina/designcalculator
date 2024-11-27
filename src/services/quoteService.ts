@@ -3,6 +3,7 @@ import { SelectedService, VolumeDiscountType, ClientDiscountType, MaintenanceTyp
 
 export interface Quote {
   id: string;
+  freelancer_id?: string;
   client_id: string;
   quote_number: string;
   total_amount: number;
@@ -25,64 +26,79 @@ export interface Quote {
 
 export type QuoteData = Omit<Quote, 'id' | 'created_at'>;
 
-// Mock data for development
-const mockQuote: Quote = {
-  id: '1',
-  client_id: '1',
-  quote_number: 'QT-2024001',
-  total_amount: 15000,
-  currency: 'MXN',
-  status: 'draft',
-  services: [
-    {
-      id: 'logotipo',
-      category: 'identidad-corporativa',
-      name: 'Logotipo Básico',
-      complexity: 'simple',
-      urgency: 'estandar',
-      rights: 'pequena',
-      scope: 'personal',
-      expertise: 'mid',
-      quantity: 1,
-      basePrice: 8000,
-      finalPrice: 8000,
-      finalPriceUSD: 400,
-      description: 'Diseño de logotipo básico con 2 propuestas',
-      breakdown: {
-        basePrice: 8000,
-        complexity: 1,
-        urgency: 1,
-        rights: 1,
-        scope: 1,
-        expertise: 1,
-        volumeDiscount: 0,
-        clientDiscount: 0,
-        maintenance: 0,
-        finalPrice: 8000,
-        finalPriceUSD: 400,
-        clientMultiplier: 1,
-        urgencyMultiplier: 1
-      }
+export async function generateQuoteNumber(): Promise<string> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user');
+
+    // Get the current year
+    const year = new Date().getFullYear();
+
+    // Get the count of quotes for this year
+    const { count, error: countError } = await supabase
+      .from('quotes')
+      .select('*', { count: 'exact', head: true })
+      .eq('freelancer_id', user.id)
+      .gte('created_at', `${year}-01-01`)
+      .lte('created_at', `${year}-12-31`);
+
+    if (countError) throw countError;
+
+    // Generate quote number: QT-YYYY-XXXX (where XXXX is sequential)
+    const sequentialNumber = String(((count || 0) + 1)).padStart(4, '0');
+    return `QT-${year}-${sequentialNumber}`;
+  } catch (error) {
+    console.error('Error generating quote number:', error);
+    // Fallback quote number if there's an error
+    const timestamp = Date.now().toString().slice(-4);
+    return `QT-${new Date().getFullYear()}-${timestamp}`;
+  }
+}
+
+export async function createQuote(quoteData: Omit<QuoteData, 'freelancer_id'>): Promise<Quote> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user');
+
+    const { data, error } = await supabase
+      .from('quotes')
+      .insert({
+        ...quoteData,
+        freelancer_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select(`
+        *,
+        client:clients(name, company, email, phone)
+      `)
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
     }
-  ],
-  terms: [
-    'Los precios no incluyen IVA (16%)',
-    'Cotización válida por 30 días',
-    '50% de anticipo para iniciar el proyecto'
-  ],
-  client: {
-    name: 'John Doe',
-    company: 'ACME Inc',
-    email: 'john@acme.com',
-    phone: '+1234567890'
-  },
-  created_at: new Date().toISOString()
-};
+
+    if (!data) {
+      throw new Error('No data returned from insert');
+    }
+
+    return {
+      ...data,
+      id: data.id,
+      created_at: data.created_at || new Date().toISOString(),
+      client: data.client || quoteData.client
+    };
+  } catch (error) {
+    console.error('Error in createQuote:', error);
+    throw error;
+  }
+}
 
 export async function getQuotes(): Promise<Quote[]> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [mockQuote];
+    if (!user) return [];
 
     const { data, error } = await supabase
       .from('quotes')
@@ -93,26 +109,18 @@ export async function getQuotes(): Promise<Quote[]> {
       .eq('freelancer_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching quotes:', error);
-      return [mockQuote];
-    }
-
-    return data.map(quote => ({
-      ...quote,
-      id: quote.id || '',
-      created_at: quote.created_at || new Date().toISOString()
-    }));
+    if (error) throw error;
+    return data || [];
   } catch (error) {
     console.error('Error in getQuotes:', error);
-    return [mockQuote];
+    return [];
   }
 }
 
-export async function getQuote(id: string): Promise<Quote> {
+export async function getQuote(id: string): Promise<QuoteData | null> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return mockQuote;
+    if (!user) return null;
 
     const { data, error } = await supabase
       .from('quotes')
@@ -124,55 +132,15 @@ export async function getQuote(id: string): Promise<Quote> {
       .eq('freelancer_id', user.id)
       .single();
 
-    if (error) {
-      console.error('Error fetching quote:', error);
-      return mockQuote;
-    }
-
-    return {
-      ...data,
-      id: data.id || '',
-      created_at: data.created_at || new Date().toISOString()
-    };
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Error in getQuote:', error);
-    return mockQuote;
+    return null;
   }
 }
 
-export async function createQuote(quoteData: QuoteData): Promise<Quote> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No authenticated user');
-
-    const { data, error } = await supabase
-      .from('quotes')
-      .insert({
-        ...quoteData,
-        freelancer_id: user.id
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return {
-      ...data,
-      id: data.id || '',
-      created_at: data.created_at || new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error in createQuote:', error);
-    return {
-      ...mockQuote,
-      ...quoteData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString()
-    };
-  }
-}
-
-export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Promise<Quote> {
+export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Promise<Quote | null> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -185,24 +153,17 @@ export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Pr
       })
       .eq('id', id)
       .eq('freelancer_id', user.id)
-      .select()
+      .select(`
+        *,
+        client:clients(name, company, email, phone)
+      `)
       .single();
 
     if (error) throw error;
-
-    return {
-      ...data,
-      id: data.id || '',
-      created_at: data.created_at || new Date().toISOString()
-    };
+    return data;
   } catch (error) {
     console.error('Error in updateQuote:', error);
-    return {
-      ...mockQuote,
-      ...quoteData,
-      id,
-      created_at: new Date().toISOString()
-    };
+    return null;
   }
 }
 
@@ -221,27 +182,6 @@ export async function deleteQuote(id: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Error in deleteQuote:', error);
-    return true;
-  }
-}
-
-export async function generateQuoteNumber(): Promise<string> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No authenticated user');
-
-    const { count, error } = await supabase
-      .from('quotes')
-      .select('*', { count: 'exact', head: true })
-      .eq('freelancer_id', user.id);
-
-    if (error) throw error;
-
-    const nextNumber = (count || 0) + 1;
-    const year = new Date().getFullYear();
-    return `COT-${year}-${nextNumber.toString().padStart(4, '0')}`;
-  } catch (error) {
-    console.error('Error generating quote number:', error);
-    return `COT-${Date.now()}`;
+    return false;
   }
 }
