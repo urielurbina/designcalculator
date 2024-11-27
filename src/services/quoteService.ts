@@ -31,10 +31,7 @@ export async function generateQuoteNumber(): Promise<string> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    // Get the current year
     const year = new Date().getFullYear();
-
-    // Get the count of quotes for this year
     const { count, error: countError } = await supabase
       .from('quotes')
       .select('*', { count: 'exact', head: true })
@@ -44,12 +41,10 @@ export async function generateQuoteNumber(): Promise<string> {
 
     if (countError) throw countError;
 
-    // Generate quote number: QT-YYYY-XXXX (where XXXX is sequential)
     const sequentialNumber = String(((count || 0) + 1)).padStart(4, '0');
     return `QT-${year}-${sequentialNumber}`;
   } catch (error) {
     console.error('Error generating quote number:', error);
-    // Fallback quote number if there's an error
     const timestamp = Date.now().toString().slice(-4);
     return `QT-${new Date().getFullYear()}-${timestamp}`;
   }
@@ -60,14 +55,28 @@ export async function createQuote(quoteData: Omit<QuoteData, 'freelancer_id'>): 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
+    // Prepare the quote data
+    const quoteToInsert = {
+      freelancer_id: user.id,
+      client_id: quoteData.client_id,
+      quote_number: quoteData.quote_number,
+      total_amount: quoteData.total_amount,
+      currency: quoteData.currency,
+      status: quoteData.status,
+      services: quoteData.services,
+      terms: quoteData.terms,
+      volume_discount: quoteData.volume_discount || 'none',
+      client_type: quoteData.client_type || 'normal',
+      maintenance: quoteData.maintenance || 'none',
+      notes: quoteData.notes || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // Insert the quote
     const { data, error } = await supabase
       .from('quotes')
-      .insert({
-        ...quoteData,
-        freelancer_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .insert([quoteToInsert])
       .select(`
         *,
         client:clients(name, company, email, phone)
@@ -83,10 +92,11 @@ export async function createQuote(quoteData: Omit<QuoteData, 'freelancer_id'>): 
       throw new Error('No data returned from insert');
     }
 
+    // Return the quote with the client data
     return {
       ...data,
       id: data.id,
-      created_at: data.created_at || new Date().toISOString(),
+      created_at: data.created_at,
       client: data.client || quoteData.client
     };
   } catch (error) {
