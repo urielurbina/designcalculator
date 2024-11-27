@@ -14,12 +14,13 @@ export interface QuoteData {
   client_type?: ClientDiscountType;
   maintenance?: MaintenanceType;
   notes?: string;
-  client?: {
+  client: {
     name: string;
     company?: string;
     email: string;
     phone?: string;
   };
+  created_at: string;
 }
 
 // Mock data for development
@@ -72,8 +73,35 @@ const mockQuoteData: QuoteData = {
     company: 'ACME Inc',
     email: 'john@acme.com',
     phone: '+1234567890'
-  }
+  },
+  created_at: new Date().toISOString()
 };
+
+export async function getQuotes(): Promise<QuoteData[]> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [mockQuoteData];
+
+    const { data, error } = await supabase
+      .from('quotes')
+      .select(`
+        *,
+        client:clients(name, company, email, phone)
+      `)
+      .eq('freelancer_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching quotes:', error);
+      return [mockQuoteData];
+    }
+
+    return data.length > 0 ? data : [mockQuoteData];
+  } catch (error) {
+    console.error('Error in getQuotes:', error);
+    return [mockQuoteData];
+  }
+}
 
 export async function getQuote(id: string): Promise<QuoteData> {
   try {
@@ -102,33 +130,7 @@ export async function getQuote(id: string): Promise<QuoteData> {
   }
 }
 
-export async function getQuotes(): Promise<QuoteData[]> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [mockQuoteData];
-
-    const { data, error } = await supabase
-      .from('quotes')
-      .select(`
-        *,
-        client:clients(name, company, email, phone)
-      `)
-      .eq('freelancer_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching quotes:', error);
-      return [mockQuoteData];
-    }
-
-    return data.length > 0 ? data : [mockQuoteData];
-  } catch (error) {
-    console.error('Error in getQuotes:', error);
-    return [mockQuoteData];
-  }
-}
-
-export async function createQuote(quoteData: Omit<QuoteData, 'id'>) {
+export async function createQuote(quoteData: Omit<QuoteData, 'id' | 'created_at'>) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
