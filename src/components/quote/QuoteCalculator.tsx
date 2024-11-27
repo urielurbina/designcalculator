@@ -43,7 +43,8 @@ export default function QuoteCalculator({
     addService,
     removeService,
     updateService,
-    getTotalPrice
+    getTotalPrice,
+    calculateServicePrice
   } = useCalculator();
 
   const [currentService, setCurrentService] = useState<Partial<Service>>({
@@ -74,7 +75,8 @@ export default function QuoteCalculator({
 
   const handleAddService = () => {
     if (currentService.category && currentService.id) {
-      addService(currentService as Service);
+      const calculatedService = calculateServicePrice(currentService as Service);
+      addService(calculatedService);
       setCurrentService({
         category: 'identidad-corporativa',
         id: 'logotipo',
@@ -106,7 +108,13 @@ export default function QuoteCalculator({
         terms,
         volume_discount: volumeDiscount,
         client_type: clientType,
-        maintenance: maintenance
+        maintenance: maintenance,
+        client: {
+          name: clientData.name,
+          company: clientData.company,
+          email: clientData.email,
+          phone: clientData.phone
+        }
       });
 
       onFinish();
