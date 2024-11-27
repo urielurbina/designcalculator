@@ -155,66 +155,13 @@ export default function PriceCalculator() {
               totalPrice={totalPrice}
               currency={currency}
               onCurrencyChange={setCurrency}
+              volumeDiscount={volumeDiscount}
+              onVolumeDiscountChange={setVolumeDiscount}
+              clientType={clientType}
+              onClientTypeChange={setClientType}
+              maintenance={maintenance}
+              onMaintenanceChange={setMaintenance}
             />
-
-            {/* Global Options */}
-            <div className="mt-6 sm:mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descuento por Volumen
-                  <span className="ml-1 text-gray-500 text-xs">
-                    (Aplicado al total)
-                  </span>
-                </label>
-                <select
-                  value={volumeDiscount}
-                  onChange={(e) => setVolumeDiscount(e.target.value as VolumeDiscountType)}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  <option value="none">Sin descuento</option>
-                  <option value="2-3">2-3 servicios (-10%)</option>
-                  <option value="4-5">4-5 servicios (-15%)</option>
-                  <option value="6+">6+ servicios (-20%)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Cliente
-                  <span className="ml-1 text-gray-500 text-xs">
-                    (Descuento adicional)
-                  </span>
-                </label>
-                <select
-                  value={clientType}
-                  onChange={(e) => setClientType(e.target.value as ClientDiscountType)}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  <option value="normal">Cliente Nuevo</option>
-                  <option value="recurrente">Cliente Recurrente (-5%)</option>
-                  <option value="vip">Cliente VIP (-10%)</option>
-                </select>
-              </div>
-
-              <div className="sm:col-span-2 lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mantenimiento
-                  <span className="ml-1 text-gray-500 text-xs">
-                    (Opcional)
-                  </span>
-                </label>
-                <select
-                  value={maintenance}
-                  onChange={(e) => setMaintenance(e.target.value as MaintenanceType)}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  <option value="none">Sin mantenimiento</option>
-                  <option value="mensual">Mensual (+20%)</option>
-                  <option value="trimestral">Trimestral (+15%)</option>
-                  <option value="anual">Anual (+10%)</option>
-                </select>
-              </div>
-            </div>
 
             <div className="mt-6 sm:mt-8">
               <button
