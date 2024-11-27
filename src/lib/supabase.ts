@@ -9,22 +9,57 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
-  },
-  db: {
-    schema: 'public'
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+    storage: {
+      getItem: (key) => {
+        try {
+          const storedData = window.localStorage.getItem(key);
+          return storedData ? JSON.parse(storedData) : null;
+        } catch {
+          return null;
+        }
+      },
+      setItem: (key, value) => {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      },
+      removeItem: (key) => {
+        window.localStorage.removeItem(key);
+      }
+    }
   }
 });
 
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent'
+      },
+      skipBrowserRedirect: false
+    }
+  });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function subscribeEmail(data: { email: string; name: string }) {
   try {
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('subscriptions')
       .select('id')
       .eq('email', data.email)
       .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
 
     if (existing) {
       throw new Error('Este email ya está suscrito');

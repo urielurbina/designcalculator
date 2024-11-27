@@ -1,3 +1,42 @@
+-- Create subscriptions table if it doesn't exist
+create table if not exists public.subscriptions (
+  id uuid default gen_random_uuid() primary key,
+  email text not null unique,
+  name text not null,
+  subscribed_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  status text default 'active' check (status in ('active', 'unsubscribed')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable Row Level Security (RLS)
+alter table public.subscriptions enable row level security;
+
+-- Create policies
+create policy "Allow anonymous inserts to subscriptions"
+  on public.subscriptions for insert
+  to anon
+  with check (true);
+
+create policy "Allow users to view their own subscription"
+  on public.subscriptions for select
+  to authenticated
+  using (email = auth.email());
+
+create policy "Allow users to update their own subscription"
+  on public.subscriptions for update
+  to authenticated
+  using (email = auth.email())
+  with check (email = auth.email());
+
+-- Add indexes
+create index if not exists subscriptions_email_idx on public.subscriptions (email);
+create index if not exists subscriptions_status_idx on public.subscriptions (status);
+
+-- Add email validation
+alter table public.subscriptions
+  add constraint subscriptions_email_check
+  check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+
 -- Create brand_leads table
 create table if not exists public.brand_leads (
   id uuid default gen_random_uuid() primary key,
