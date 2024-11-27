@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   return <>{children}</>;
 
   // Original authentication logic (commented out for now)
-  /*
+  
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -22,5 +22,5 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }
 
   return <>{children}</>;
-  */
+  
 }

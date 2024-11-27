@@ -1,76 +1,88 @@
-import React, { useState } from 'react';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
-
-interface Client {
-  id: string;
-  name: string;
-  company: string;
-  email: string;
-  phone: string;
-}
-
-const mockClients: Client[] = [
-  {
-    id: '1',
-    name: 'Juan Pérez',
-    company: 'Empresa ABC',
-    email: 'juan@empresa.com',
-    phone: '123-456-7890'
-  },
-  {
-    id: '2',
-    name: 'María García',
-    company: 'Startup XYZ',
-    email: 'maria@startup.com',
-    phone: '098-765-4321'
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { getClients, createClient, updateClient, deleteClient } from '../../services/clientService';
+import type { ClientData } from '../../services/clientService';
 
 export default function ClientsPanel() {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<ClientData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<ClientData, 'id'>>({
     name: '',
     company: '',
     email: '',
     phone: ''
   });
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  async function loadClients() {
+    try {
+      setLoading(true);
+      const data = await getClients();
+      setClients(data);
+    } catch (err) {
+      console.error('Error loading clients:', err);
+      setError('Error al cargar los clientes');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredClients = clients.filter(client => 
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setClients(clients.map(client => 
-        client.id === editingId 
-          ? { ...client, ...formData }
-          : client
-      ));
+    try {
+      if (editingId) {
+        await updateClient(editingId, formData);
+      } else {
+        await createClient(formData);
+      }
+      await loadClients();
+      setFormData({ name: '', company: '', email: '', phone: '' });
       setEditingId(null);
-    } else {
-      setClients([...clients, { id: Date.now().toString(), ...formData }]);
+      setIsAdding(false);
+    } catch (err) {
+      console.error('Error saving client:', err);
+      setError('Error al guardar el cliente');
     }
-    setFormData({ name: '', company: '', email: '', phone: '' });
-    setIsAdding(false);
   };
 
-  const startEditing = (client: Client) => {
+  const startEditing = (client: ClientData) => {
     setFormData(client);
     setEditingId(client.id);
     setIsAdding(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
-      setClients(clients.filter(client => client.id !== id));
+      try {
+        await deleteClient(id);
+        await loadClients();
+      } catch (err) {
+        console.error('Error deleting client:', err);
+        setError('Error al eliminar el cliente');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -101,6 +113,12 @@ export default function ClientsPanel() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {isAdding && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -128,7 +146,6 @@ export default function ClientsPanel() {
                 value={formData.company}
                 onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
               />
             </div>
             <div>
@@ -152,7 +169,6 @@ export default function ClientsPanel() {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
               />
             </div>
             <div className="flex justify-end gap-4">
@@ -224,7 +240,7 @@ export default function ClientsPanel() {
                       <Edit2 className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(client.id)}
+                      onClick={() => handleDelete(client.id!)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <Trash2 className="w-5 h-5" />

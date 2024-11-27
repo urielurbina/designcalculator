@@ -1,25 +1,78 @@
-import React from 'react';
-import { User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { User, Save, Loader2 } from 'lucide-react';
+import { getFreelancerProfile, updateFreelancerProfile } from '../../services/freelancerService';
 
-interface FreelancerFormProps {
-  data: {
-    name: string;
-    website: string;
-    email: string;
-    phone: string;
-    logoUrl: string;
-  };
-  onChange: (data: any) => void;
+interface FreelancerData {
+  name: string;
+  website: string;
+  email: string;
+  phone: string;
+  logo_url: string;
 }
 
-export default function FreelancerForm({ data, onChange }: FreelancerFormProps) {
+export default function FreelancerForm() {
+  const [data, setData] = useState<FreelancerData>({
+    name: '',
+    website: '',
+    email: '',
+    phone: '',
+    logo_url: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        setLoading(true);
+        const profile = await getFreelancerProfile();
+        if (profile) {
+          setData(profile);
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        setError('Error al cargar el perfil');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    onChange({ ...data, [name]: value });
+    setData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      setError(null);
+      await updateFreelancerProfile(data);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setError('Error al guardar los cambios');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center gap-3 mb-6">
         <User className="w-5 h-5 text-indigo-600" />
         <h2 className="text-lg font-semibold text-gray-900">
@@ -39,6 +92,7 @@ export default function FreelancerForm({ data, onChange }: FreelancerFormProps) 
             onChange={handleChange}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="Tu nombre completo"
+            required
           />
         </div>
 
@@ -67,6 +121,7 @@ export default function FreelancerForm({ data, onChange }: FreelancerFormProps) 
             onChange={handleChange}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="tu@email.com"
+            required
           />
         </div>
 
@@ -90,16 +145,16 @@ export default function FreelancerForm({ data, onChange }: FreelancerFormProps) 
           </label>
           <input
             type="url"
-            name="logoUrl"
-            value={data.logoUrl}
+            name="logo_url"
+            value={data.logo_url}
             onChange={handleChange}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="https://ejemplo.com/logo.png"
           />
-          {data.logoUrl && (
+          {data.logo_url && (
             <div className="mt-2">
               <img
-                src={data.logoUrl}
+                src={data.logo_url}
                 alt="Logo Preview"
                 className="h-16 object-contain rounded"
                 onError={(e) => {
@@ -109,7 +164,35 @@ export default function FreelancerForm({ data, onChange }: FreelancerFormProps) 
             </div>
           )}
         </div>
+
+        {error && (
+          <div className="text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="text-sm text-green-600">
+            Cambios guardados correctamente
+          </div>
+        )}
+
+        <div className="pt-4">
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white 
+                     px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Save className="w-5 h-5" />
+            )}
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+        </div>
       </div>
-    </div>
+    </form>
   );
 }
