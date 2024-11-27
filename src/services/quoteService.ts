@@ -1,8 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { SelectedService, VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 
-export interface QuoteData {
-  id?: string;
+export interface Quote {
+  id: string;
   client_id: string;
   quote_number: string;
   total_amount: number;
@@ -23,8 +23,10 @@ export interface QuoteData {
   created_at: string;
 }
 
+export type QuoteData = Omit<Quote, 'id' | 'created_at'>;
+
 // Mock data for development
-const mockQuoteData: QuoteData = {
+const mockQuote: Quote = {
   id: '1',
   client_id: '1',
   quote_number: 'QT-2024001',
@@ -77,10 +79,10 @@ const mockQuoteData: QuoteData = {
   created_at: new Date().toISOString()
 };
 
-export async function getQuotes(): Promise<QuoteData[]> {
+export async function getQuotes(): Promise<Quote[]> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [mockQuoteData];
+    if (!user) return [mockQuote];
 
     const { data, error } = await supabase
       .from('quotes')
@@ -93,20 +95,24 @@ export async function getQuotes(): Promise<QuoteData[]> {
 
     if (error) {
       console.error('Error fetching quotes:', error);
-      return [mockQuoteData];
+      return [mockQuote];
     }
 
-    return data.length > 0 ? data : [mockQuoteData];
+    return data.map(quote => ({
+      ...quote,
+      id: quote.id || '',
+      created_at: quote.created_at || new Date().toISOString()
+    }));
   } catch (error) {
     console.error('Error in getQuotes:', error);
-    return [mockQuoteData];
+    return [mockQuote];
   }
 }
 
-export async function getQuote(id: string): Promise<QuoteData> {
+export async function getQuote(id: string): Promise<Quote> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return mockQuoteData;
+    if (!user) return mockQuote;
 
     const { data, error } = await supabase
       .from('quotes')
@@ -120,17 +126,21 @@ export async function getQuote(id: string): Promise<QuoteData> {
 
     if (error) {
       console.error('Error fetching quote:', error);
-      return mockQuoteData;
+      return mockQuote;
     }
 
-    return data || mockQuoteData;
+    return {
+      ...data,
+      id: data.id || '',
+      created_at: data.created_at || new Date().toISOString()
+    };
   } catch (error) {
     console.error('Error in getQuote:', error);
-    return mockQuoteData;
+    return mockQuote;
   }
 }
 
-export async function createQuote(quoteData: Omit<QuoteData, 'id' | 'created_at'>) {
+export async function createQuote(quoteData: QuoteData): Promise<Quote> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -145,18 +155,24 @@ export async function createQuote(quoteData: Omit<QuoteData, 'id' | 'created_at'
       .single();
 
     if (error) throw error;
-    return data;
+
+    return {
+      ...data,
+      id: data.id || '',
+      created_at: data.created_at || new Date().toISOString()
+    };
   } catch (error) {
     console.error('Error in createQuote:', error);
     return {
-      id: Date.now().toString(),
+      ...mockQuote,
       ...quoteData,
+      id: Date.now().toString(),
       created_at: new Date().toISOString()
     };
   }
 }
 
-export async function updateQuote(id: string, quoteData: Partial<QuoteData>) {
+export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Promise<Quote> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -173,18 +189,24 @@ export async function updateQuote(id: string, quoteData: Partial<QuoteData>) {
       .single();
 
     if (error) throw error;
-    return data;
+
+    return {
+      ...data,
+      id: data.id || '',
+      created_at: data.created_at || new Date().toISOString()
+    };
   } catch (error) {
     console.error('Error in updateQuote:', error);
     return {
-      id,
+      ...mockQuote,
       ...quoteData,
-      updated_at: new Date().toISOString()
+      id,
+      created_at: new Date().toISOString()
     };
   }
 }
 
-export async function deleteQuote(id: string) {
+export async function deleteQuote(id: string): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -199,11 +221,11 @@ export async function deleteQuote(id: string) {
     return true;
   } catch (error) {
     console.error('Error in deleteQuote:', error);
-    return true; // Return success even on error for development
+    return true;
   }
 }
 
-export async function generateQuoteNumber() {
+export async function generateQuoteNumber(): Promise<string> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
