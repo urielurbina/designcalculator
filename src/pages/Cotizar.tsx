@@ -55,13 +55,6 @@ export default function Cotizar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Quote['status'] | 'all'>('all');
   const [quotes, setQuotes] = useState<Quote[]>(mockQuotes);
-  const [freelancerData, setFreelancerData] = useState({
-    name: '',
-    website: '',
-    email: '',
-    phone: '',
-    logoUrl: ''
-  });
 
   const filteredQuotes = quotes.filter(quote => {
     const matchesSearch = quote.clientName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -82,14 +75,7 @@ export default function Cotizar() {
 
     switch (activePanel) {
       case 'freelancer':
-        return (
-          <div className="max-w-3xl mx-auto">
-            <FreelancerForm
-              data={freelancerData}
-              onChange={setFreelancerData}
-            />
-          </div>
-        );
+        return <FreelancerForm />;
       case 'clients':
         return <ClientsPanel />;
       case 'pdf-design':
