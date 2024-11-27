@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Edit2, Check, X, Minus, Plus } from 'lucide-react';
 import { SelectedService } from '../types';
 import { Currency } from '../hooks/useCalculator';
+import { VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 
 interface ServiceListProps {
   services: SelectedService[];
@@ -10,6 +11,12 @@ interface ServiceListProps {
   totalPrice: { mxn: number; usd: number };
   currency: Currency;
   onCurrencyChange: (currency: Currency) => void;
+  volumeDiscount: VolumeDiscountType;
+  onVolumeDiscountChange: (discount: VolumeDiscountType) => void;
+  clientType: ClientDiscountType;
+  onClientTypeChange: (type: ClientDiscountType) => void;
+  maintenance: MaintenanceType;
+  onMaintenanceChange: (maintenance: MaintenanceType) => void;
 }
 
 export default function ServiceList({ 
@@ -18,7 +25,13 @@ export default function ServiceList({
   onUpdateService, 
   totalPrice,
   currency,
-  onCurrencyChange
+  onCurrencyChange,
+  volumeDiscount,
+  onVolumeDiscountChange,
+  clientType,
+  onClientTypeChange,
+  maintenance,
+  onMaintenanceChange
 }: ServiceListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -190,12 +203,74 @@ export default function ServiceList({
       </div>
 
       {services.length > 0 && (
-        <div className="mt-6 p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg text-white">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <span className="font-medium">Total</span>
-            <div className="text-right">
-              <div className="text-xl sm:text-2xl font-bold">
-                ${getTotalDisplayPrice()} {currency}
+        <div>
+          {/* Global Options */}
+          <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Descuento por Volumen
+                <span className="ml-1 text-gray-500 text-xs">
+                  (Aplicado al total)
+                </span>
+              </label>
+              <select
+                value={volumeDiscount}
+                onChange={(e) => onVolumeDiscountChange(e.target.value as VolumeDiscountType)}
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="none">Sin descuento</option>
+                <option value="2-3">2-3 servicios (-10%)</option>
+                <option value="4-5">4-5 servicios (-15%)</option>
+                <option value="6+">6+ servicios (-20%)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de Cliente
+                <span className="ml-1 text-gray-500 text-xs">
+                  (Descuento adicional)
+                </span>
+              </label>
+              <select
+                value={clientType}
+                onChange={(e) => onClientTypeChange(e.target.value as ClientDiscountType)}
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="normal">Cliente Nuevo</option>
+                <option value="recurrente">Cliente Recurrente (-5%)</option>
+                <option value="vip">Cliente VIP (-10%)</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mantenimiento
+                <span className="ml-1 text-gray-500 text-xs">
+                  (Opcional)
+                </span>
+              </label>
+              <select
+                value={maintenance}
+                onChange={(e) => onMaintenanceChange(e.target.value as MaintenanceType)}
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="none">Sin mantenimiento</option>
+                <option value="mensual">Mensual (+20%)</option>
+                <option value="trimestral">Trimestral (+15%)</option>
+                <option value="anual">Anual (+10%)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="mt-6 p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg text-white">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <span className="font-medium">Total</span>
+              <div className="text-right">
+                <div className="text-xl sm:text-2xl font-bold">
+                  ${getTotalDisplayPrice()} {currency}
+                </div>
               </div>
             </div>
           </div>
