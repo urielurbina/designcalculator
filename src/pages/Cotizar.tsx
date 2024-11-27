@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { 
   LogOut, 
   Plus, 
@@ -9,214 +8,315 @@ import {
   MoreVertical,
   Edit2,
   Trash2,
-  Download
+  Download,
+  Settings,
+  Users,
+  Palette,
+  List
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import NewQuoteForm from '../components/quote/NewQuoteForm';
+import FreelancerForm from '../components/quote/FreelancerForm';
+import ClientsPanel from '../components/quote/ClientsPanel';
+import PDFDesignPanel from '../components/quote/PDFDesignPanel';
+import ServicesPanel from '../components/quote/ServicesPanel';
+
+type ActivePanel = 'quotes' | 'freelancer' | 'clients' | 'pdf-design' | 'services';
 
 interface Quote {
   id: string;
+  date: string;
   clientName: string;
   total: number;
-  status: 'pending' | 'approved' | 'rejected';
-  date: string;
+  status: 'draft' | 'sent' | 'accepted' | 'rejected';
 }
 
 const mockQuotes: Quote[] = [
   {
-    id: 'QT-001',
-    clientName: 'Empresa ABC',
-    total: 25000,
-    status: 'pending',
-    date: '2024-03-20'
-  },
-  {
-    id: 'QT-002',
-    clientName: 'Startup XYZ',
+    id: '1',
+    date: '2024-03-15',
+    clientName: 'Juan Pérez',
     total: 15000,
-    status: 'approved',
-    date: '2024-03-19'
+    status: 'sent'
   },
   {
-    id: 'QT-003',
-    clientName: 'Consultora 123',
-    total: 35000,
-    status: 'rejected',
-    date: '2024-03-18'
+    id: '2',
+    date: '2024-03-14',
+    clientName: 'María García',
+    total: 25000,
+    status: 'accepted'
   }
 ];
 
-const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800'
-};
-
-const statusLabels = {
-  pending: 'Pendiente',
-  approved: 'Aprobada',
-  rejected: 'Rechazada'
-};
-
 export default function Cotizar() {
   const { user, signOut } = useAuth();
+  const [activePanel, setActivePanel] = useState<ActivePanel>('quotes');
+  const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<Quote['status'] | 'all'>('all');
+  const [quotes, setQuotes] = useState<Quote[]>(mockQuotes);
+  const [freelancerData, setFreelancerData] = useState({
+    name: '',
+    website: '',
+    email: '',
+    phone: '',
+    logoUrl: ''
+  });
 
-  const filteredQuotes = mockQuotes.filter(quote => {
-    const matchesSearch = quote.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quote.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || quote.status === filterStatus;
+  const filteredQuotes = quotes.filter(quote => {
+    const matchesSearch = quote.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleActionClick = (quoteId: string, action: 'edit' | 'delete' | 'download') => {
-    setActiveDropdown(null);
-    // Implementar acciones
-    console.log(`${action} quote ${quoteId}`);
+  const handleDeleteQuote = (id: string) => {
+    if (confirm('¿Estás seguro de que quieres eliminar esta cotización?')) {
+      setQuotes(quotes.filter(quote => quote.id !== id));
+    }
+  };
+
+  const renderPanel = () => {
+    if (isCreating) {
+      return <NewQuoteForm onClose={() => setIsCreating(false)} />;
+    }
+
+    switch (activePanel) {
+      case 'freelancer':
+        return (
+          <div className="max-w-3xl mx-auto">
+            <FreelancerForm
+              data={freelancerData}
+              onChange={setFreelancerData}
+            />
+          </div>
+        );
+      case 'clients':
+        return <ClientsPanel />;
+      case 'pdf-design':
+        return <PDFDesignPanel />;
+      case 'services':
+        return <ServicesPanel />;
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Actions Bar */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <button
+                onClick={() => setIsCreating(true)}
+                className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 
+                         rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Nueva Cotización
+              </button>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative">
+                  <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Buscar cotizaciones..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64
+                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as Quote['status'] | 'all')}
+                  className="pl-4 pr-8 py-2 border border-gray-300 rounded-lg
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="draft">Borrador</option>
+                  <option value="sent">Enviada</option>
+                  <option value="accepted">Aceptada</option>
+                  <option value="rejected">Rechazada</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Quotes List */}
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredQuotes.map((quote) => (
+                    <tr key={quote.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {new Date(quote.date).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {quote.clientName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          ${quote.total.toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${quote.status === 'accepted' ? 'bg-green-100 text-green-800' : ''}
+                          ${quote.status === 'sent' ? 'bg-blue-100 text-blue-800' : ''}
+                          ${quote.status === 'rejected' ? 'bg-red-100 text-red-800' : ''}
+                          ${quote.status === 'draft' ? 'bg-gray-100 text-gray-800' : ''}`}
+                        >
+                          {quote.status === 'accepted' && 'Aceptada'}
+                          {quote.status === 'sent' && 'Enviada'}
+                          {quote.status === 'rejected' && 'Rechazada'}
+                          {quote.status === 'draft' && 'Borrador'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {/* Handle edit */}}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => {/* Handle download */}}
+                            className="text-gray-600 hover:text-gray-900"
+                          >
+                            <Download className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteQuote(quote.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredQuotes.length === 0 && (
+                <div className="text-center py-12">
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No hay cotizaciones
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Comienza creando una nueva cotización.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Panel de Cotización</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.email}</span>
-            <button
-              onClick={signOut}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Salir
-            </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-xl font-semibold text-gray-900">Panel de Cotización</h1>
+            
+            <div className="flex items-center gap-4">
+              <nav className="flex items-center gap-2">
+                <button
+                  onClick={() => setActivePanel('quotes')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
+                    activePanel === 'quotes' 
+                      ? 'bg-indigo-50 text-indigo-700' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="hidden sm:inline">Cotizaciones</span>
+                </button>
+                <button
+                  onClick={() => setActivePanel('freelancer')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
+                    activePanel === 'freelancer'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="hidden sm:inline">Mi Información</span>
+                </button>
+                <button
+                  onClick={() => setActivePanel('clients')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
+                    activePanel === 'clients'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="hidden sm:inline">Clientes</span>
+                </button>
+                <button
+                  onClick={() => setActivePanel('services')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
+                    activePanel === 'services'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <List className="w-5 h-5" />
+                  <span className="hidden sm:inline">Mis Servicios</span>
+                </button>
+                <button
+                  onClick={() => setActivePanel('pdf-design')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
+                    activePanel === 'pdf-design'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Palette className="w-5 h-5" />
+                  <span className="hidden sm:inline">Diseño PDF</span>
+                </button>
+              </nav>
+
+              <div className="flex items-center gap-4 border-l pl-4">
+                <span className="text-sm text-gray-600">{user?.email}</span>
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Salir</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Actions Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <button
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg 
-                     hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Nueva Cotización
-          </button>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <div className="relative">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Buscar cotizaciones..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="relative">
-              <Filter className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg appearance-none
-                         bg-white w-full sm:w-48 focus:ring-2 focus:ring-indigo-500 
-                         focus:border-indigo-500"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="pending">Pendientes</option>
-                <option value="approved">Aprobadas</option>
-                <option value="rejected">Rechazadas</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Quotes List */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="min-w-full divide-y divide-gray-200">
-            <div className="bg-gray-50">
-              <div className="grid grid-cols-[1fr,2fr,1fr,1fr,auto] gap-4 px-6 py-3">
-                <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
-                <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</div>
-                <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
-                <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</div>
-                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</div>
-              </div>
-            </div>
-            <div className="bg-white divide-y divide-gray-200">
-              {filteredQuotes.map((quote) => (
-                <div key={quote.id} className="grid grid-cols-[1fr,2fr,1fr,1fr,auto] gap-4 px-6 py-4 hover:bg-gray-50">
-                  <div className="flex items-center">
-                    <FileText className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-900">{quote.id}</span>
-                  </div>
-                  <div className="text-sm text-gray-900">{quote.clientName}</div>
-                  <div className="text-sm text-gray-900">${quote.total.toLocaleString()}</div>
-                  <div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                   ${statusColors[quote.status]}`}>
-                      {statusLabels[quote.status]}
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveDropdown(activeDropdown === quote.id ? null : quote.id)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <MoreVertical className="w-5 h-5 text-gray-500" />
-                    </button>
-                    
-                    {activeDropdown === quote.id && (
-                      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black 
-                                    ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10">
-                        <div className="py-1">
-                          <button
-                            onClick={() => handleActionClick(quote.id, 'edit')}
-                            className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 
-                                     hover:text-gray-900 w-full"
-                          >
-                            <Edit2 className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleActionClick(quote.id, 'download')}
-                            className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 
-                                     hover:text-gray-900 w-full"
-                          >
-                            <Download className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                            Descargar PDF
-                          </button>
-                          <button
-                            onClick={() => handleActionClick(quote.id, 'delete')}
-                            className="group flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 
-                                     hover:text-red-700 w-full"
-                          >
-                            <Trash2 className="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500" />
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {filteredQuotes.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay cotizaciones</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Comienza creando una nueva cotización.
-              </p>
-            </div>
-          )}
-        </div>
+        {renderPanel()}
       </main>
     </div>
   );

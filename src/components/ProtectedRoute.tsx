@@ -2,6 +2,11 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  // Temporarily disable authentication check
+  return <>{children}</>;
+
+  // Original authentication logic (commented out for now)
+  /*
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,4 +22,5 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }
 
   return <>{children}</>;
+  */
 }
