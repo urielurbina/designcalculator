@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Search, Building2, Plus } from 'lucide-react';
+import { ArrowLeft, Search, Building2 } from 'lucide-react';
 import QuoteCalculator from './QuoteCalculator';
 import { getClients } from '../../services/clientService';
 import { getFreelancerProfile } from '../../services/freelancerService';
@@ -161,6 +161,7 @@ export default function NewQuoteForm({ onClose }: NewQuoteFormProps) {
             logoUrl: freelancerData.logo_url || ''
           }}
           clientData={{
+            id: selectedClient.id || '',
             name: selectedClient.name,
             company: selectedClient.company || '',
             email: selectedClient.email,
