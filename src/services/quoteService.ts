@@ -55,16 +55,21 @@ export async function createQuote(quoteData: Omit<QuoteData, 'freelancer_id'>): 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    // Prepare the quote data
+    // Validate required fields
+    if (!quoteData.client_id) throw new Error('Client ID is required');
+    if (!quoteData.services || quoteData.services.length === 0) throw new Error('At least one service is required');
+    if (!quoteData.total_amount) throw new Error('Total amount is required');
+
+    // Prepare the quote data with all required fields
     const quoteToInsert = {
       freelancer_id: user.id,
       client_id: quoteData.client_id,
       quote_number: quoteData.quote_number,
       total_amount: quoteData.total_amount,
       currency: quoteData.currency,
-      status: quoteData.status,
+      status: quoteData.status || 'draft',
       services: quoteData.services,
-      terms: quoteData.terms,
+      terms: quoteData.terms || [],
       volume_discount: quoteData.volume_discount || 'none',
       client_type: quoteData.client_type || 'normal',
       maintenance: quoteData.maintenance || 'none',
@@ -73,31 +78,34 @@ export async function createQuote(quoteData: Omit<QuoteData, 'freelancer_id'>): 
       updated_at: new Date().toISOString()
     };
 
-    // Insert the quote
+    // Insert the quote and get the client data in a single query
     const { data, error } = await supabase
       .from('quotes')
       .insert([quoteToInsert])
       .select(`
         *,
-        client:clients(name, company, email, phone)
+        client:clients (
+          name,
+          company,
+          email,
+          phone
+        )
       `)
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+      console.error('Database error:', error);
+      throw new Error('Failed to create quote');
     }
 
     if (!data) {
       throw new Error('No data returned from insert');
     }
 
-    // Return the quote with the client data
+    // Return the complete quote with client data
     return {
       ...data,
-      id: data.id,
-      created_at: data.created_at,
-      client: data.client || quoteData.client
+      client: data.client || quoteData.client // Fallback to provided client data if needed
     };
   } catch (error) {
     console.error('Error in createQuote:', error);
@@ -114,7 +122,12 @@ export async function getQuotes(): Promise<Quote[]> {
       .from('quotes')
       .select(`
         *,
-        client:clients(name, company, email, phone)
+        client:clients (
+          name,
+          company,
+          email,
+          phone
+        )
       `)
       .eq('freelancer_id', user.id)
       .order('created_at', { ascending: false });
@@ -136,7 +149,12 @@ export async function getQuote(id: string): Promise<QuoteData | null> {
       .from('quotes')
       .select(`
         *,
-        client:clients(name, company, email, phone)
+        client:clients (
+          name,
+          company,
+          email,
+          phone
+        )
       `)
       .eq('id', id)
       .eq('freelancer_id', user.id)
@@ -165,7 +183,12 @@ export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Pr
       .eq('freelancer_id', user.id)
       .select(`
         *,
-        client:clients(name, company, email, phone)
+        client:clients (
+          name,
+          company,
+          email,
+          phone
+        )
       `)
       .single();
 
