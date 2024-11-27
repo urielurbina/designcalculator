@@ -4,7 +4,8 @@ import ServiceForm from '../ServiceForm';
 import ServiceList from '../ServiceList';
 import TermsEditor from '../TermsEditor';
 import { Service } from '../../types';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
+import { createQuote, generateQuoteNumber } from '../../services/quoteService';
 
 interface QuoteCalculatorProps {
   freelancerData: {
@@ -15,6 +16,7 @@ interface QuoteCalculatorProps {
     logoUrl: string;
   };
   clientData: {
+    id: string; // Added client ID
     name: string;
     company: string;
     email: string;
@@ -63,6 +65,9 @@ export default function QuoteCalculator({
     'Incluye hasta 2 rondas de revisiones'
   ]);
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleServiceChange = (field: keyof Service, value: string | number) => {
     setCurrentService(prev => ({ ...prev, [field]: value }));
   };
@@ -83,22 +88,34 @@ export default function QuoteCalculator({
     }
   };
 
-  const handleGenerateQuote = () => {
-    // Here you would generate the quote with all the data
-    console.log('Generating quote with:', {
-      freelancerData,
-      clientData,
-      services: selectedServices,
-      totalPrice: getTotalPrice(),
-      settings: {
-        volumeDiscount,
-        clientType,
-        maintenance,
-        currency
-      },
-      terms
-    });
-    onFinish();
+  const handleGenerateQuote = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      const totalPrice = getTotalPrice();
+      const quoteNumber = await generateQuoteNumber();
+
+      await createQuote({
+        client_id: clientData.id,
+        quote_number: quoteNumber,
+        total_amount: currency === 'MXN' ? totalPrice.mxn : totalPrice.usd,
+        currency,
+        status: 'draft',
+        services: selectedServices,
+        terms,
+        volume_discount: volumeDiscount,
+        client_type: clientType,
+        maintenance: maintenance
+      });
+
+      onFinish();
+    } catch (err) {
+      console.error('Error saving quote:', err);
+      setError('Error al guardar la cotización');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -145,14 +162,30 @@ export default function QuoteCalculator({
             />
           </div>
 
+          {error && (
+            <div className="mt-4 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           <div className="mt-8">
             <button
               onClick={handleGenerateQuote}
+              disabled={saving}
               className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 
-                       transition-colors flex items-center justify-center gap-2"
+                       transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <FileText className="w-5 h-5" />
-              Generar Cotización
+              {saving ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <FileText className="w-5 h-5" />
+                  Generar Cotización
+                </>
+              )}
             </button>
           </div>
         </div>

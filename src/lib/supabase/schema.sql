@@ -1,8 +1,73 @@
+-- Create clients table
+create table if not exists public.clients (
+  id uuid default gen_random_uuid() primary key,
+  freelancer_id uuid references auth.users on delete cascade,
+  name text not null,
+  company text,
+  email text not null,
+  phone text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS on clients
+alter table public.clients enable row level security;
+
+-- Create policies for clients
+create policy "Users can view own clients"
+  on clients for select
+  using (auth.uid() = freelancer_id);
+
+create policy "Users can insert own clients"
+  on clients for insert
+  with check (auth.uid() = freelancer_id);
+
+create policy "Users can update own clients"
+  on clients for update
+  using (auth.uid() = freelancer_id);
+
+create policy "Users can delete own clients"
+  on clients for delete
+  using (auth.uid() = freelancer_id);
+
+-- Create indexes for clients
+create index if not exists clients_freelancer_id_idx on clients (freelancer_id);
+create index if not exists clients_email_idx on clients (email);
+create index if not exists clients_created_at_idx on clients (created_at);
+
+-- Create freelancers table
+create table if not exists public.freelancers (
+  id uuid references auth.users on delete cascade primary key,
+  name text not null,
+  website text,
+  email text not null,
+  phone text,
+  logo_url text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS on freelancers
+alter table public.freelancers enable row level security;
+
+-- Create policies for freelancers
+create policy "Users can view own profile"
+  on freelancers for select
+  using (auth.uid() = id);
+
+create policy "Users can insert own profile"
+  on freelancers for insert
+  with check (auth.uid() = id);
+
+create policy "Users can update own profile"
+  on freelancers for update
+  using (auth.uid() = id);
+
 -- Create quotes table
 create table if not exists public.quotes (
   id uuid default gen_random_uuid() primary key,
-  freelancer_id uuid not null references auth.users on delete cascade,
-  client_id uuid not null references public.clients on delete restrict,
+  freelancer_id uuid references auth.users on delete cascade,
+  client_id uuid references public.clients on delete restrict,
   quote_number text not null,
   total_amount numeric(10,2) not null,
   currency text not null check (currency in ('MXN', 'USD')),
@@ -44,30 +109,32 @@ create index if not exists quotes_quote_number_idx on quotes (quote_number);
 create index if not exists quotes_status_idx on quotes (status);
 create index if not exists quotes_created_at_idx on quotes (created_at);
 
--- Create trigger for updated_at
+-- Create function to handle updated_at
+create or replace function handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = timezone('utc'::text, now());
+  return new;
+end;
+$$ language plpgsql;
+
+-- Create triggers for updated_at
+create trigger handle_clients_updated_at
+  before update on clients
+  for each row
+  execute function handle_updated_at();
+
+create trigger handle_freelancers_updated_at
+  before update on freelancers
+  for each row
+  execute function handle_updated_at();
+
 create trigger handle_quotes_updated_at
   before update on quotes
   for each row
   execute function handle_updated_at();
 
 -- Grant necessary permissions
+grant all on public.clients to anon, authenticated;
+grant all on public.freelancers to anon, authenticated;
 grant all on public.quotes to anon, authenticated;
-
--- Create function to generate quote number
-create or replace function generate_quote_number(freelancer_id uuid)
-returns text
-language plpgsql
-as $$
-declare
-  quote_count integer;
-  year_str text;
-begin
-  select count(*)
-  into quote_count
-  from quotes
-  where quotes.freelancer_id = $1;
-
-  year_str := to_char(current_date, 'YYYY');
-  return 'COT-' || year_str || '-' || lpad((quote_count + 1)::text, 4, '0');
-end;
-$$;
