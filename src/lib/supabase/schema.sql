@@ -1,94 +1,73 @@
--- Create freelancers table
-create table if not exists public.freelancers (
-  id uuid primary key references auth.users on delete cascade,
-  name text not null,
-  website text,
-  email text not null,
-  phone text,
-  logo_url text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- Enable RLS on freelancers
-alter table public.freelancers enable row level security;
-
--- Create policies for freelancers
-create policy "Users can view own freelancer profile"
-  on freelancers for select
-  using (auth.uid() = id);
-
-create policy "Users can update own freelancer profile"
-  on freelancers for update
-  using (auth.uid() = id);
-
-create policy "Users can insert own freelancer profile"
-  on freelancers for insert
-  with check (auth.uid() = id);
-
--- Create clients table
-create table if not exists public.clients (
+-- Create quotes table
+create table if not exists public.quotes (
   id uuid default gen_random_uuid() primary key,
   freelancer_id uuid not null references auth.users on delete cascade,
-  name text not null,
-  company text,
-  email text not null,
-  phone text,
+  client_id uuid not null references public.clients on delete restrict,
+  quote_number text not null,
+  total_amount numeric(10,2) not null,
+  currency text not null check (currency in ('MXN', 'USD')),
+  status text not null check (status in ('draft', 'sent', 'accepted', 'rejected')),
+  services jsonb not null,
+  terms text[] not null,
+  volume_discount text check (volume_discount in ('none', '2-3', '4-5', '6+')),
+  client_type text check (client_type in ('normal', 'recurrente', 'vip')),
+  maintenance text check (maintenance in ('none', 'mensual', 'trimestral', 'anual')),
+  notes text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable RLS on clients
-alter table public.clients enable row level security;
+-- Enable RLS on quotes
+alter table public.quotes enable row level security;
 
--- Create policies for clients
-create policy "Users can view own clients"
-  on clients for select
+-- Create policies for quotes
+create policy "Users can view own quotes"
+  on quotes for select
   using (auth.uid() = freelancer_id);
 
-create policy "Users can insert own clients"
-  on clients for insert
+create policy "Users can insert own quotes"
+  on quotes for insert
   with check (auth.uid() = freelancer_id);
 
-create policy "Users can update own clients"
-  on clients for update
+create policy "Users can update own quotes"
+  on quotes for update
   using (auth.uid() = freelancer_id);
 
-create policy "Users can delete own clients"
-  on clients for delete
+create policy "Users can delete own quotes"
+  on quotes for delete
   using (auth.uid() = freelancer_id);
 
 -- Create indexes
-create index if not exists clients_freelancer_id_idx on clients (freelancer_id);
-create index if not exists clients_email_idx on clients (email);
+create index if not exists quotes_freelancer_id_idx on quotes (freelancer_id);
+create index if not exists quotes_client_id_idx on quotes (client_id);
+create index if not exists quotes_quote_number_idx on quotes (quote_number);
+create index if not exists quotes_status_idx on quotes (status);
+create index if not exists quotes_created_at_idx on quotes (created_at);
 
--- Add email validation
-alter table public.clients
-  add constraint clients_email_check
-  check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+-- Create trigger for updated_at
+create trigger handle_quotes_updated_at
+  before update on quotes
+  for each row
+  execute function handle_updated_at();
 
-alter table public.freelancers
-  add constraint freelancers_email_check
-  check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+-- Grant necessary permissions
+grant all on public.quotes to anon, authenticated;
 
--- Create function to handle updated_at
-create or replace function public.handle_updated_at()
-returns trigger
+-- Create function to generate quote number
+create or replace function generate_quote_number(freelancer_id uuid)
+returns text
 language plpgsql
 as $$
+declare
+  quote_count integer;
+  year_str text;
 begin
-  new.updated_at = timezone('utc'::text, now());
-  return new;
+  select count(*)
+  into quote_count
+  from quotes
+  where quotes.freelancer_id = $1;
+
+  year_str := to_char(current_date, 'YYYY');
+  return 'COT-' || year_str || '-' || lpad((quote_count + 1)::text, 4, '0');
 end;
 $$;
-
--- Create triggers for updated_at
-create trigger handle_freelancers_updated_at
-  before update on freelancers
-  for each row
-  execute function handle_updated_at();
-
-create trigger handle_clients_updated_at
-  before update on clients
-  for each row
-  execute function handle_updated_at();
