@@ -12,9 +12,9 @@ export interface AuthResponse {
   error: AuthError | null;
 }
 
-export async function signInWithGoogle(): Promise<AuthResponse> {
+export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
   try {
-    const { data: oAuthData, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
@@ -27,8 +27,6 @@ export async function signInWithGoogle(): Promise<AuthResponse> {
 
     if (error) {
       return {
-        user: null,
-        session: null,
         error: {
           message: error.message,
           status: (error as SupabaseAuthError).status
@@ -36,16 +34,9 @@ export async function signInWithGoogle(): Promise<AuthResponse> {
       };
     }
 
-    // Since OAuth sign-in redirects, we won't have immediate access to user/session
-    return {
-      user: null,
-      session: null,
-      error: null
-    };
+    return { error: null };
   } catch (error) {
     return {
-      user: null,
-      session: null,
       error: {
         message: error instanceof Error ? error.message : 'An unknown error occurred',
         status: 500
