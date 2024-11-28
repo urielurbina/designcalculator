@@ -5,7 +5,7 @@ import { savePDFDesign, loadPDFDesign } from '../../services/pdfDesignService';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { CustomQuotePDFPreview } from './CustomQuotePDF';
-import { ServiceId, ServiceCategory } from '@/types';
+import { ServiceId, ServiceCategory, ComplexityLevel, UrgencyLevel, RightsLevel, ScopeLevel, ExpertiseLevel } from '@/types';
 
 interface PDFDesignConfig {
   primaryColor: string;
@@ -157,11 +157,11 @@ const sampleServices = [
     },
     id: 'logotipo-completo' as ServiceId,
     category: 'identidad-corporativa' as ServiceCategory,
-    complexity: 'simple',
-    urgency: 'estandar',
-    rights: 'pequena',
-    scope: 'personal',
-    expertise: 'senior'
+    complexity: 'simple' as ComplexityLevel,
+    urgency: 'estandar' as UrgencyLevel,
+    rights: 'pequena' as RightsLevel,
+    scope: 'personal' as ScopeLevel,
+    expertise: 'senior' as ExpertiseLevel
   },
   {
     name: 'Diseño de Tarjetas',
@@ -194,11 +194,11 @@ const sampleServices = [
     },
     id: 'papeleria' as ServiceId,
     category: 'identidad-corporativa' as ServiceCategory,
-    complexity: 'simple',
-    urgency: 'estandar',
-    rights: 'pequena',
-    scope: 'personal',
-    expertise: 'senior'
+    complexity: 'simple' as ComplexityLevel,
+    urgency: 'estandar' as UrgencyLevel,
+    rights: 'pequena' as RightsLevel,
+    scope: 'personal' as ScopeLevel,
+    expertise: 'senior' as ExpertiseLevel
   }
 ];
 
