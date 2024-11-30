@@ -218,3 +218,70 @@ export async function deleteQuote(id: string): Promise<boolean> {
     return false;
   }
 }
+
+export const getQuoteById = async (quoteId: string) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user');
+
+    // Primero obtenemos los datos del freelancer
+    const { data: freelancerData, error: freelancerError } = await supabase
+      .from('freelancers')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (freelancerError) {
+      console.error('Error obteniendo datos del freelancer:', freelancerError);
+      throw freelancerError;
+    }
+
+    // Luego obtenemos los datos de la cotización
+    const { data: quoteData, error: quoteError } = await supabase
+      .from('quotes')
+      .select(`
+        *,
+        client:clients (
+          id,
+          name,
+          company,
+          email,
+          phone
+        )
+      `)
+      .eq('id', quoteId)
+      .eq('freelancer_id', user.id)
+      .single();
+
+    if (quoteError) {
+      console.error('Error en la consulta de la cotización:', quoteError);
+      throw quoteError;
+    }
+
+    if (!quoteData) {
+      console.error('No se encontraron datos para la cotización:', quoteId);
+      throw new Error('No se encontró la cotización');
+    }
+
+    // Los servicios ya vienen en el campo services como JSON
+    const completeData = {
+      ...quoteData,
+      freelancer: freelancerData,
+      // Asegurarnos de que services sea un array
+      services: Array.isArray(quoteData.services) ? quoteData.services : []
+    };
+
+    // Verificar que los datos necesarios estén presentes
+    console.log('Datos completos de la cotización:', {
+      quote: completeData,
+      client: completeData.client,
+      freelancer: completeData.freelancer,
+      services: completeData.services
+    });
+
+    return completeData;
+  } catch (error) {
+    console.error('Error fetching quote:', error);
+    throw error;
+  }
+};

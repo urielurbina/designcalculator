@@ -226,7 +226,16 @@ export const CustomQuotePDF: React.FC<CustomQuotePDFProps> = ({
   currency,
   design,
 }) => {
+  console.log('Renderizando CustomQuotePDF con:', {
+    quoteInfo,
+    services,
+    totalPrice,
+    currency,
+    design
+  });
+
   const styles = createStyles(design);
+  console.log('Estilos generados:', styles);
 
   const getDisplayPrice = (price: { mxn: number; usd: number }) => {
     const value = currency === 'MXN' ? price.mxn : price.usd;
@@ -280,19 +289,22 @@ export const CustomQuotePDF: React.FC<CustomQuotePDFProps> = ({
 
         <View style={styles.servicesSection}>
           <Text style={styles.subtitle}>Servicios</Text>
-          {services.map((service, index) => (
-            <View key={index} style={styles.serviceCard}>
-              <View style={styles.serviceHeader}>
-                <Text style={styles.serviceName}>{service.name}</Text>
-                <Text style={styles.servicePrice}>
-                  {getDisplayPrice({ mxn: service.finalPrice, usd: service.finalPriceUSD })}
-                </Text>
+          {services.map((service, index) => {
+            console.log('Renderizando servicio:', service);
+            return (
+              <View key={index} style={styles.serviceCard}>
+                <View style={styles.serviceHeader}>
+                  <Text style={styles.serviceName}>{service.name}</Text>
+                  <Text style={styles.servicePrice}>
+                    {getDisplayPrice({ mxn: service.finalPrice, usd: service.finalPriceUSD })}
+                  </Text>
+                </View>
+                {service.description && (
+                  <Text style={styles.serviceDescription}>{service.description}</Text>
+                )}
               </View>
-              {service.description && (
-                <Text style={styles.serviceDescription}>{service.description}</Text>
-              )}
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         <View style={styles.priceBreakdown}>
@@ -336,6 +348,8 @@ export const CustomQuotePDFPreview: React.FC<PreviewWrapperProps> = ({
   height = '100%',
   ...props
 }) => {
+  console.log('Renderizando CustomQuotePDFPreview con props:', props);
+  
   return (
     <PDFViewer width={width} height={height}>
       <CustomQuotePDF {...props} />
