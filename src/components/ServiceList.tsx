@@ -100,6 +100,16 @@ export default function ServiceList({
     onUpdateService(index, recalculatedService);
   };
 
+  // Agregar un manejador específico para la descripción
+  const handleDescriptionUpdate = (index: number, description: string) => {
+    const service = services[index];
+    const updatedService = {
+      ...service,
+      description: description.replace(/\r\n/g, '\n')
+    };
+    onUpdateService(index, updatedService);
+  };
+
   // Agregar la función de ordenamiento
   const sortAlphabetically = <T extends { label: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => a.label.localeCompare(b.label));
@@ -307,11 +317,29 @@ export default function ServiceList({
                       Descripción
                     </label>
                     <textarea
-                      value={service.description}
-                      onChange={(e) => handleServiceUpdate(index, 'description', e.target.value)}
+                      value={service.description || ''}
+                      onChange={(e) => handleDescriptionUpdate(index, e.target.value)}
                       className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      rows={3}
-                      placeholder="Agregar detalles específicos del servicio..."
+                      style={{ 
+                        whiteSpace: 'pre-wrap',
+                        minHeight: '200px',
+                        fontFamily: 'monospace'
+                      }}
+                      rows={10}
+                      spellCheck={false}
+                      wrap="soft"
+                      placeholder="Agregar detalles específicos del servicio...
+
+Usa una línea en blanco para separar secciones.
+Ejemplo:
+
+FASE 1: TÍTULO
+* Punto 1
+* Punto 2
+
+FASE 2: TÍTULO
+* Punto 1
+* Punto 2"
                     />
                   </div>
 

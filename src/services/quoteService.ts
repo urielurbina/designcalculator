@@ -168,35 +168,70 @@ export async function getQuote(id: string): Promise<QuoteData | null> {
   }
 }
 
-export async function updateQuote(id: string, quoteData: Partial<QuoteData>): Promise<Quote | null> {
+export async function updateQuote(quoteId: string, quoteData: QuoteData): Promise<void> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    const { data, error } = await supabase
+    console.log('Updating quote with data:', {
+      quoteId,
+      userId: user.id,
+      quoteData
+    });
+
+    // Verificar que la cotización pertenezca al usuario
+    const { data: existingQuote, error: checkError } = await supabase
       .from('quotes')
-      .update({
-        ...quoteData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
+      .select('*')
+      .eq('id', quoteId)
       .eq('freelancer_id', user.id)
-      .select(`
-        *,
-        client:clients (
-          name,
-          company,
-          email,
-          phone
-        )
-      `)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (checkError) {
+      console.error('Error checking quote ownership:', checkError);
+      throw new Error('Error al verificar permisos de la cotización');
+    }
+
+    if (!existingQuote) {
+      throw new Error('No tienes permiso para editar esta cotización');
+    }
+
+    // Preparar datos para actualizar - remover el objeto client
+    const updateData = {
+      client_id: quoteData.client_id, // Solo usar client_id, no el objeto client completo
+      services: quoteData.services,
+      total_amount: quoteData.total_amount,
+      currency: quoteData.currency,
+      status: quoteData.status,
+      terms: quoteData.terms,
+      volume_discount: quoteData.volume_discount,
+      client_type: quoteData.client_type,
+      maintenance: quoteData.maintenance,
+      updated_at: new Date().toISOString(),
+      freelancer_id: user.id
+    };
+
+    console.log('Update data prepared:', updateData);
+
+    const { error: updateError } = await supabase
+      .from('quotes')
+      .update(updateData)
+      .eq('id', quoteId)
+      .eq('freelancer_id', user.id);
+
+    if (updateError) {
+      console.error('Error updating quote in database:', updateError);
+      throw new Error(`Error al actualizar la cotización: ${updateError.message}`);
+    }
+
+    console.log('Quote updated successfully');
   } catch (error) {
     console.error('Error in updateQuote:', error);
-    return null;
+    if (error instanceof Error) {
+      throw new Error(`Error al actualizar la cotización: ${error.message}`);
+    } else {
+      throw new Error('Error desconocido al actualizar la cotización');
+    }
   }
 }
 

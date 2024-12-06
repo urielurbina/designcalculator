@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Loader2, Plus, Trash2, DollarSign, X } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, Trash2, DollarSign, X, Edit2 } from 'lucide-react';
 import { getQuote, updateQuote } from '../../services/quoteService';
 import { getFreelancerProfile } from '../../services/freelancerService';
 import type { QuoteData } from '../../services/quoteService';
@@ -7,6 +7,8 @@ import type { FreelancerData } from '../../services/freelancerService';
 import type { Service, SelectedService } from '../../types';
 import ServiceForm from '../ServiceForm';
 import { useCalculator } from '../../hooks/useCalculator';
+import { getUserCustomPricing } from '../../data/pricingcustom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface EditQuoteFormProps {
   quoteId: string;
@@ -14,6 +16,7 @@ interface EditQuoteFormProps {
 }
 
 export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) {
+  const { user } = useAuth();
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const [freelancerData, setFreelancerData] = useState<FreelancerData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,19 +33,23 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
     expertise: 'mid',
     quantity: 1
   });
+  const [customPricing, setCustomPricing] = useState<CustomPricing | null>(null);
+  const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
 
-  const { calculateServicePrice } = useCalculator();
+  const { calculateServicePrice } = useCalculator({ customPricing });
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [quoteData, freelancerProfile] = await Promise.all([
+        const [quoteData, freelancerProfile, userPricing] = await Promise.all([
           getQuote(quoteId),
-          getFreelancerProfile()
+          getFreelancerProfile(),
+          user?.id ? getUserCustomPricing(user.id) : null
         ]);
         setQuote(quoteData);
         setFreelancerData(freelancerProfile);
+        setCustomPricing(userPricing);
       } catch (err) {
         console.error('Error loading quote:', err);
         setError('Error al cargar la cotización');
@@ -52,18 +59,48 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
     }
 
     loadData();
-  }, [quoteId]);
+  }, [quoteId, user]);
 
   const handleSave = async () => {
-    if (!quote) return;
+    if (!quote || !user?.id) return;
 
     try {
       setSaving(true);
-      await updateQuote(quoteId, quote);
+      setError(null);
+
+      // Calcular el total actualizado
+      const newTotal = quote.services.reduce((sum, service) => sum + service.finalPrice, 0);
+
+      // Preparar los datos actualizados
+      const updatedQuote: QuoteData = {
+        client_id: quote.client_id,
+        client: quote.client,
+        quote_number: quote.quote_number,
+        total_amount: newTotal,
+        currency: quote.currency,
+        status: quote.status,
+        services: quote.services.map(service => ({
+          ...service,
+          description: service.description?.trim() // Asegurar que las descripciones estén limpias
+        })),
+        terms: quote.terms || [],
+        volume_discount: quote.volume_discount || 'none',
+        client_type: quote.client_type || 'normal',
+        maintenance: quote.maintenance || 'none',
+        freelancer_id: user.id
+      };
+
+      console.log('Saving quote with data:', updatedQuote);
+
+      // Guardar en Supabase
+      await updateQuote(quoteId, updatedQuote);
+
+      // Mostrar confirmación
+      alert('Cotización actualizada correctamente');
       onClose();
     } catch (err) {
       console.error('Error saving quote:', err);
-      setError('Error al guardar los cambios');
+      setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
     } finally {
       setSaving(false);
     }
@@ -104,6 +141,46 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
       ...quote,
       services: newServices,
       total_amount: quote.total_amount - removedService.finalPrice
+    });
+  };
+
+  const handleServiceUpdate = (index: number, field: keyof Service, value: string | number) => {
+    if (!quote) return;
+
+    const service = quote.services[index];
+    const updatedService = {
+      ...service,
+      [field]: value
+    };
+
+    // Recalcular precios con los nuevos parámetros
+    const recalculatedService = calculateServicePrice(updatedService);
+    const newServices = [...quote.services];
+    newServices[index] = recalculatedService;
+
+    // Recalcular total
+    const newTotal = newServices.reduce((sum, s) => sum + s.finalPrice, 0);
+
+    setQuote({
+      ...quote,
+      services: newServices,
+      total_amount: newTotal
+    });
+  };
+
+  const handleDescriptionUpdate = (index: number, description: string) => {
+    if (!quote) return;
+
+    const newServices = quote.services.map((service, i) => 
+      i === index ? { 
+        ...service, 
+        description: description
+      } : service
+    );
+
+    setQuote({
+      ...quote,
+      services: newServices
     });
   };
 
@@ -235,37 +312,123 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
 
             <div className="space-y-4">
               {quote.services.map((service, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">{service.name}</h3>
-                    <div className="mt-1 text-sm text-gray-500 space-y-1">
-                      <p>Cantidad: {service.quantity || 1}</p>
-                      <p>Complejidad: {service.complexity}</p>
-                      <p>Urgencia: {service.urgency}</p>
-                      {service.description && (
-                        <p className="italic">{service.description}</p>
-                      )}
+                <div key={index} className="bg-white rounded-lg shadow p-4 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{service.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        Complejidad: {service.complexity} • 
+                        Urgencia: {service.urgency} • 
+                        Alcance: {service.scope}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditingServiceIndex(index)}
+                        className="p-1 text-gray-400 hover:text-indigo-600 rounded-full
+                                 hover:bg-indigo-50 transition-colors"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleRemoveService(index)}
+                        className="p-1 text-gray-400 hover:text-red-600 rounded-full
+                                 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold text-gray-900">
-                        ${service.finalPrice.toLocaleString()}
+
+                  {editingServiceIndex === index && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Categoría */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Categoría
+                          </label>
+                          <select
+                            value={service.category}
+                            onChange={(e) => handleServiceUpdate(index, 'category', e.target.value)}
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          >
+                            {customPricing?.categories.map(cat => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Servicio */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Servicio
+                          </label>
+                          <select
+                            value={service.id}
+                            onChange={(e) => handleServiceUpdate(index, 'id', e.target.value)}
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          >
+                            {customPricing?.service_options[service.category]?.map(svc => (
+                              <option key={svc.value} value={svc.value}>
+                                {svc.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Complejidad */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Complejidad
+                          </label>
+                          <select
+                            value={service.complexity}
+                            onChange={(e) => handleServiceUpdate(index, 'complexity', e.target.value)}
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          >
+                            <option value="simple">Simple (1x)</option>
+                            <option value="moderado">Moderado (1.5x)</option>
+                            <option value="complejo">Complejo (2x)</option>
+                            <option value="premium">Premium (2.5x)</option>
+                          </select>
+                        </div>
+
+                        {/* ... otros campos similares ... */}
+
+                        {/* Descripción */}
+                        <div className="col-span-full">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Descripción
+                          </label>
+                          <textarea
+                            value={service.description || ''}
+                            onChange={(e) => handleDescriptionUpdate(index, e.target.value)}
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            style={{ 
+                              whiteSpace: 'pre-wrap',
+                              minHeight: '100px'
+                            }}
+                            rows={5}
+                            placeholder="Agregar detalles específicos del servicio...
+                            
+Usa doble Enter para separar párrafos"
+                          />
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        ${service.finalPriceUSD.toLocaleString()} USD
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => setEditingServiceIndex(null)}
+                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                        >
+                          Guardar
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleRemoveService(index)}
-                      className="text-red-600 hover:text-red-700 p-2"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>

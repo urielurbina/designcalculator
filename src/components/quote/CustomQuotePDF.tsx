@@ -19,6 +19,18 @@ Font.register({
   ]
 });
 
+Font.register({
+  family: 'Arial',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5Q.ttf' }
+  ]
+});
+
+const getFontFamily = (fontFamily: string) => {
+  const availableFonts = ['Helvetica', 'Arial'];
+  return availableFonts.includes(fontFamily) ? fontFamily : 'Helvetica';
+};
+
 interface CustomQuotePDFProps {
   quoteInfo: QuoteInfo;
   services: SelectedService[];
@@ -32,9 +44,9 @@ interface CustomQuotePDFProps {
 
 const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
   page: {
-    padding: 30,
-    fontFamily: design.fontFamily,
-    fontSize: design.fontSize.body,
+    padding: design.spacing.page,
+    fontFamily: getFontFamily(design.fontFamily),
+    fontSize: 9,
     backgroundColor: design.backgroundColor,
     color: design.textColor,
   },
@@ -42,9 +54,9 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: design.logoPosition === 'center' ? 'center' : 'space-between',
     marginBottom: 20,
-    borderBottomWidth: design.borders.width,
+    borderBottomWidth: 0.5,
     borderBottomColor: design.borders.color,
-    borderBottomStyle: design.borders.style,
+    borderBottomStyle: 'solid',
     paddingBottom: 15,
   },
   headerLeft: {
@@ -60,53 +72,54 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     objectFit: 'contain',
   },
   title: {
-    fontSize: 20,
-    fontFamily: design.fontFamily,
+    fontSize: 16,
+    fontFamily: getFontFamily(design.fontFamily),
     color: design.primaryColor,
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: 'bold',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: design.accentColor,
-    marginBottom: 8,
+    marginBottom: design.spacing.element,
   },
   infoGrid: {
     flexDirection: 'row',
-    gap: 20,
-    marginBottom: design.spacing.section,
-    padding: design.serviceCard.padding,
-    backgroundColor: design.serviceCard.backgroundColor,
-    borderRadius: design.serviceCard.borderRadius,
-    borderWidth: 1,
-    borderColor: design.serviceCard.borderColor,
-    ...(design.serviceCard.shadow && design.shadows.enabled && {
-      shadowColor: design.shadows.color,
-      shadowOpacity: design.shadows.opacity,
-      shadowRadius: design.shadows.blur,
-    }),
+    gap: 15,
+    marginBottom: 25,
+    backgroundColor: 'transparent',
   },
   infoColumn: {
     flex: 1,
+    padding: 12,
+    backgroundColor: design.serviceCard.backgroundColor,
+    borderRadius: design.serviceCard.borderRadius,
+    borderWidth: 0.5,
+    borderColor: design.borders.color,
   },
   label: {
-    fontSize: 8,
+    fontSize: 7,
     color: design.secondaryTextColor,
-    marginBottom: 2,
+    marginBottom: design.spacing.element / 4,
+    fontFamily: getFontFamily(design.secondaryFontFamily),
   },
   value: {
-    fontSize: 10,
+    fontSize: 8,
     color: design.textColor,
-    marginBottom: 8,
+    marginBottom: design.spacing.element / 2,
+    fontFamily: getFontFamily(design.fontFamily),
   },
   servicesSection: {
-    marginVertical: design.spacing.section,
+    marginVertical: 15,
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
   },
   serviceCard: {
     marginBottom: design.spacing.element,
     padding: design.serviceCard.padding,
     backgroundColor: design.serviceCard.backgroundColor,
     borderRadius: design.serviceCard.borderRadius,
-    borderWidth: 1,
+    borderWidth: design.borders.width,
     borderColor: design.serviceCard.borderColor,
     ...(design.serviceCard.shadow && design.shadows.enabled && {
       shadowColor: design.shadows.color,
@@ -117,7 +130,12 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
   serviceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: design.borders.color,
+    borderBottomStyle: design.borders.style,
   },
   serviceName: {
     fontSize: 10,
@@ -127,21 +145,37 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
   },
   servicePrice: {
     fontSize: 10,
-    color: design.textColor,
+    color: design.primaryColor,
     textAlign: 'right',
+    fontWeight: 'bold',
+  },
+  serviceDescriptionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: 8,
+    paddingRight: '10%',
   },
   serviceDescription: {
     fontSize: 8,
     color: design.secondaryTextColor,
-    marginTop: 4,
-    fontStyle: 'italic',
+    fontFamily: getFontFamily(design.secondaryFontFamily),
+    lineHeight: 1.4,
+    whiteSpace: 'pre-wrap',
+    width: '90%',
+    paddingLeft: design.spacing.element / 2,
+  },
+  serviceDivider: {
+    marginVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: design.borders.color,
+    borderBottomStyle: design.borders.style,
   },
   priceBreakdown: {
     marginTop: design.spacing.section,
     padding: design.serviceCard.padding,
-    backgroundColor: design.serviceCard.backgroundColor,
+    backgroundColor: design.accentColor,
     borderRadius: design.serviceCard.borderRadius,
-    borderWidth: 1,
+    borderWidth: design.borders.width,
     borderColor: design.serviceCard.borderColor,
     ...(design.serviceCard.shadow && design.shadows.enabled && {
       shadowColor: design.shadows.color,
@@ -150,11 +184,9 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     }),
   },
   totalSection: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: design.borders.width,
-    borderTopColor: design.borders.color,
-    borderTopStyle: design.borders.style,
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
+    marginTop: design.spacing.section,
   },
   totalRow: {
     flexDirection: 'row',
@@ -163,59 +195,95 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
   },
   totalLabel: {
     fontSize: 12,
-    color: design.primaryColor,
+    color: design.backgroundColor,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   totalAmount: {
-    fontSize: 12,
-    color: design.primaryColor,
+    fontSize: 14,
+    color: design.backgroundColor,
     textAlign: 'right',
     fontWeight: 'bold',
   },
   footer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     left: 30,
     right: 30,
     textAlign: 'center',
     color: design.secondaryTextColor,
     fontSize: 8,
-    paddingTop: 10,
-    borderTopWidth: design.borders.width,
+    paddingTop: 12,
+    borderTopWidth: 0.5,
     borderTopColor: design.borders.color,
     borderTopStyle: design.borders.style,
   },
   metaInfo: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: 15,
     marginBottom: 4,
   },
   metaText: {
-    fontSize: 9,
+    fontSize: 7,
     color: design.secondaryTextColor,
+    fontFamily: getFontFamily(design.secondaryFontFamily),
   },
   termsSection: {
-    position: 'absolute',
-    bottom: 50,
-    left: 30,
-    right: 30,
-    fontSize: 6,
-    color: design.secondaryTextColor,
-    textAlign: 'justify',
+    position: 'relative',
+    marginTop: 'auto',
+    paddingTop: 20,
+    marginBottom: 50,
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
   },
   termsTitle: {
-    fontSize: 12,
-    color: design.secondaryTextColor,
-    marginBottom: 4,
+    fontSize: 10,
+    color: design.primaryColor,
+    marginBottom: 8,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   termsList: {
     marginBottom: 12,
   },
   termItem: {
-    fontSize: 8,
-    marginBottom: 2,
+    fontSize: 7,
     color: design.secondaryTextColor,
+    fontFamily: getFontFamily(design.secondaryFontFamily),
+    marginBottom: design.spacing.element / 4,
+    lineHeight: 1.4,
+  },
+  contentContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    minHeight: '100%',
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
+  },
+  mainContent: {
+    flex: 1,
+  },
+  serviceWrapper: {
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
+    marginBottom: design.spacing.element,
+  },
+  infoWrapper: {
+    breakInside: 'avoid',
+    marginBottom: design.spacing.section,
+  },
+  serviceItemContainer: {
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
+    marginBottom: design.spacing.element,
+  },
+  infoSection: {
+    breakInside: 'avoid',
+    pageBreakInside: 'avoid',
+    marginBottom: design.spacing.section,
   },
 });
 
@@ -245,94 +313,125 @@ export const CustomQuotePDF: React.FC<CustomQuotePDFProps> = ({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {design.showHeader && (
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.title}>Cotización #{quoteInfo.quoteNumber}</Text>
-              <View style={styles.metaInfo}>
-                <Text style={styles.metaText}>Fecha: {quoteInfo.quoteDate}</Text>
-                <Text style={styles.metaText}>Válido hasta: {quoteInfo.validUntil}</Text>
-              </View>
-            </View>
-            {quoteInfo.designerLogo && (
-              <View style={styles.headerRight}>
-                <Image src={quoteInfo.designerLogo} style={styles.logo} />
-              </View>
-            )}
-          </View>
-        )}
-
-        <View style={styles.infoGrid}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.subtitle}>Proveedor</Text>
-            <Text style={styles.label}>Nombre</Text>
-            <Text style={styles.value}>{quoteInfo.designerName}</Text>
-            <Text style={styles.label}>Sitio Web</Text>
-            <Text style={styles.value}>{quoteInfo.designerWebsite}</Text>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{quoteInfo.designerEmail}</Text>
-            <Text style={styles.label}>Teléfono</Text>
-            <Text style={styles.value}>{quoteInfo.designerPhone}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.subtitle}>Cliente</Text>
-            <Text style={styles.label}>Nombre</Text>
-            <Text style={styles.value}>{quoteInfo.clientName}</Text>
-            <Text style={styles.label}>Empresa</Text>
-            <Text style={styles.value}>{quoteInfo.clientCompany}</Text>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{quoteInfo.clientEmail}</Text>
-            <Text style={styles.label}>Teléfono</Text>
-            <Text style={styles.value}>{quoteInfo.clientPhone}</Text>
-          </View>
-        </View>
-
-        <View style={styles.servicesSection}>
-          <Text style={styles.subtitle}>Servicios</Text>
-          {services.map((service, index) => {
-            console.log('Renderizando servicio:', service);
-            return (
-              <View key={index} style={styles.serviceCard}>
-                <View style={styles.serviceHeader}>
-                  <Text style={styles.serviceName}>{service.name}</Text>
-                  <Text style={styles.servicePrice}>
-                    {getDisplayPrice({ mxn: service.finalPrice, usd: service.finalPriceUSD })}
-                  </Text>
+        <View style={styles.contentContainer}>
+          <View style={styles.mainContent}>
+            {design.showHeader && (
+              <View style={styles.header}>
+                <View style={styles.headerLeft}>
+                  <Text style={styles.title}>Cotización #{quoteInfo.quoteNumber}</Text>
+                  <View style={styles.metaInfo}>
+                    <Text style={styles.metaText}>Fecha: {quoteInfo.quoteDate}</Text>
+                    <Text style={styles.metaText}>Válido hasta: {quoteInfo.validUntil}</Text>
+                  </View>
                 </View>
-                {service.description && (
-                  <Text style={styles.serviceDescription}>{service.description}</Text>
+                {quoteInfo.designerLogo && (
+                  <View style={styles.headerRight}>
+                    <Image src={quoteInfo.designerLogo} style={styles.logo} />
+                  </View>
                 )}
               </View>
-            );
-          })}
-        </View>
+            )}
 
-        <View style={styles.priceBreakdown}>
-          <View style={styles.totalSection}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalAmount}>{getDisplayPrice(totalPrice)}</Text>
+            <View style={styles.infoSection}>
+              <View style={styles.infoGrid}>
+                <View style={styles.infoColumn}>
+                  <Text style={[styles.subtitle, { fontSize: 10, marginBottom: 4 }]}>Proveedor</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    <View style={{ flex: 1, minWidth: 100 }}>
+                      <Text style={styles.label}>Nombre</Text>
+                      <Text style={styles.value}>{quoteInfo.designerName}</Text>
+                      <Text style={styles.label}>Sitio Web</Text>
+                      <Text style={styles.value}>{quoteInfo.designerWebsite}</Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 100 }}>
+                      <Text style={styles.label}>Email</Text>
+                      <Text style={styles.value}>{quoteInfo.designerEmail}</Text>
+                      <Text style={styles.label}>Teléfono</Text>
+                      <Text style={styles.value}>{quoteInfo.designerPhone}</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={[styles.subtitle, { fontSize: 10, marginBottom: 4 }]}>Cliente</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    <View style={{ flex: 1, minWidth: 100 }}>
+                      <Text style={styles.label}>Nombre</Text>
+                      <Text style={styles.value}>{quoteInfo.clientName}</Text>
+                      <Text style={styles.label}>Empresa</Text>
+                      <Text style={styles.value}>{quoteInfo.clientCompany}</Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 100 }}>
+                      <Text style={styles.label}>Email</Text>
+                      <Text style={styles.value}>{quoteInfo.clientEmail}</Text>
+                      <Text style={styles.label}>Teléfono</Text>
+                      <Text style={styles.value}>{quoteInfo.clientPhone}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.servicesSection}>
+              <Text style={[styles.subtitle, { marginBottom: design.spacing.element }]}>Servicios</Text>
+              {services.map((service, index) => (
+                <View key={index} style={styles.serviceItemContainer}>
+                  <View style={styles.serviceWrapper}>
+                    <View style={styles.serviceCard}>
+                      <View style={styles.serviceHeader}>
+                        <Text style={styles.serviceName}>{service.name}</Text>
+                        <Text style={styles.servicePrice}>
+                          {getDisplayPrice({ mxn: service.finalPrice, usd: service.finalPriceUSD })}
+                        </Text>
+                      </View>
+                      {service.description && (
+                        <View style={styles.serviceDescriptionContainer}>
+                          <Text style={styles.serviceDescription}>
+                            {service.description
+                              .split('\n')
+                              .map((line, i, arr) => (
+                                <React.Fragment key={i}>
+                                  {line}
+                                  {i < arr.length - 1 && (arr[i + 1] === '' ? '\n\n' : '\n')}
+                                </React.Fragment>
+                              ))}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    {index < services.length - 1 && <View style={styles.serviceDivider} />}
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.totalSection}>
+              <View style={[styles.priceBreakdown, { breakInside: 'avoid-page' }]}>
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalAmount}>{getDisplayPrice(totalPrice)}</Text>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.termsSection}>
-          <Text style={styles.termsTitle}>Términos y Condiciones</Text>
-          <View style={styles.termsList}>
-            <Text style={styles.termItem}>• Los precios no incluyen IVA (16%)</Text>
-            <Text style={styles.termItem}>• El tiempo de entrega comienza a partir del pago del anticipo del 50%</Text>
-            <Text style={styles.termItem}>• Esta cotización tiene una validez de 30 días a partir de su emisión</Text>
-            <Text style={styles.termItem}>• Se incluyen hasta 2 rondas de revisiones por entregable</Text>
-            <Text style={styles.termItem}>• Revisiones adicionales tendrán un costo extra del 25% sobre el valor del entregable</Text>
-            <Text style={styles.termItem}>• Los archivos fuente se entregarán una vez completado el pago total</Text>
+          <View style={styles.termsSection}>
+            <Text style={styles.termsTitle}>Términos y Condiciones</Text>
+            <View style={styles.termsList}>
+              <Text style={styles.termItem}>• Los precios no incluyen IVA (16%)</Text>
+              <Text style={styles.termItem}>• El tiempo de entrega comienza a partir del pago del anticipo del 50%</Text>
+              <Text style={styles.termItem}>• Esta cotización tiene una validez de 30 días a partir de su emisión</Text>
+              <Text style={styles.termItem}>• Se incluyen hasta 2 rondas de revisiones por entregable</Text>
+              <Text style={styles.termItem}>• Revisiones adicionales tendrán un costo extra del 25% sobre el valor del entregable</Text>
+              <Text style={styles.termItem}>• Los archivos fuente se entregarán una vez completado el pago total</Text>
+            </View>
           </View>
-        </View>
 
-        {design.showFooter && (
-          <View style={styles.footer}>
-            <Text>{design.footerText.replace('{year}', new Date().getFullYear().toString())}</Text>
-          </View>
-        )}
+          {design.showFooter && (
+            <View style={styles.footer}>
+              <Text>{design.footerText.replace('{year}', new Date().getFullYear().toString())}</Text>
+            </View>
+          )}
+        </View>
       </Page>
     </Document>
   );
