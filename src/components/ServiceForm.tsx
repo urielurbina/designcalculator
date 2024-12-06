@@ -2,11 +2,13 @@ import React from 'react';
 import { Plus, HelpCircle } from 'lucide-react';
 import { serviceOptions } from '../data/pricing';
 import { Service, ServiceCategory, ComplexityLevel, UrgencyLevel, RightsLevel, ScopeLevel, ExpertiseLevel } from '../types';
+import { CustomPricing } from '../data/pricingcustom';
 
 interface ServiceFormProps {
   service: Partial<Service>;
   onChange: (field: keyof Service, value: string | number) => void;
   onAdd: () => void;
+  customPricing: CustomPricing | null;
 }
 
 interface TooltipLabelProps {
@@ -36,7 +38,10 @@ const tooltips = {
   expertise: "Nivel de experiencia requerido para el proyecto"
 };
 
-export default function ServiceForm({ service, onChange, onAdd }: ServiceFormProps) {
+export default function ServiceForm({ service, onChange, onAdd, customPricing }: ServiceFormProps) {
+  const categories = customPricing?.categories || [];
+  const services = customPricing?.service_options[service.category || ''] || [];
+
   const handleCategoryChange = (category: ServiceCategory) => {
     onChange('category', category);
     // Select the first service of the new category
@@ -45,22 +50,6 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
       onChange('id', firstService);
     }
   };
-
-  const categories = [
-    { value: 'identidad-corporativa' as ServiceCategory, label: 'Identidad Corporativa' },
-    { value: 'ilustracion' as ServiceCategory, label: 'Ilustración' },
-    { value: 'publicidad-exterior' as ServiceCategory, label: 'Publicidad Exterior' },
-    { value: 'impresos' as ServiceCategory, label: 'Impresos' },
-    { value: 'foto-video' as ServiceCategory, label: 'Foto y Video' },
-    { value: 'edicion-animacion' as ServiceCategory, label: 'Edición y Animación' },
-    { value: 'editorial' as ServiceCategory, label: 'Editorial' },
-    { value: 'web' as ServiceCategory, label: 'Diseño Web' },
-    { value: 'marketing' as ServiceCategory, label: 'Marketing' },
-    { value: 'social-media' as ServiceCategory, label: 'Social Media' },
-    { value: 'audiovisual' as ServiceCategory, label: 'Audiovisual' },
-    { value: 'fotografia' as ServiceCategory, label: 'Fotografía' },
-    { value: 'moda' as ServiceCategory, label: 'Diseño de Moda' }
-  ];
 
   const complexityLevels: { value: ComplexityLevel; label: string }[] = [
     { value: 'simple', label: 'Simple (1x)' },
@@ -111,8 +100,8 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
             onChange={(e) => handleCategoryChange(e.target.value as ServiceCategory)}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            {categories.map(category => (
-              <option key={category.value} value={category.value}>
+            {categories.map((category: { id: string; label: string }) => (
+              <option key={category.id} value={category.id}>
                 {category.label}
               </option>
             ))}
@@ -128,9 +117,10 @@ export default function ServiceForm({ service, onChange, onAdd }: ServiceFormPro
             onChange={(e) => onChange('id', e.target.value)}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            {service.category && serviceOptions[service.category]?.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+            <option value="">Seleccionar servicio</option>
+            {services.map((service: { value: string; label: string }) => (
+              <option key={service.value} value={service.value}>
+                {service.label}
               </option>
             ))}
           </select>

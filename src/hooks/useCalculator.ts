@@ -12,12 +12,17 @@ import {
   expertiseMultipliers
 } from '../data/pricing';
 import { Service, SelectedService, VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
+import { CustomPricing } from '../data/pricingcustom';
 
 const MXN_TO_USD = 20; // Exchange rate: 20 MXN = 1 USD
 
 export type Currency = 'MXN' | 'USD';
 
-export function useCalculator() {
+interface UseCalculatorProps {
+  customPricing?: CustomPricing | null;
+}
+
+export function useCalculator({ customPricing }: UseCalculatorProps = {}) {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [volumeDiscount, setVolumeDiscount] = useState<VolumeDiscountType>('none');
   const [clientType, setClientType] = useState<ClientDiscountType>('normal');
@@ -26,8 +31,13 @@ export function useCalculator() {
 
   const calculateServicePrice = useCallback((service: Service): SelectedService => {
     try {
-      const categoryRates = baseRates[service.category];
-      const basePrice = categoryRates[service.id] || 0;
+      const rates = customPricing?.base_rates || baseRates;
+      const basePrice = rates[service.category]?.[service.id] || 0;
+      
+      const services = customPricing?.service_options || serviceOptions;
+      const serviceOption = services[service.category]?.find(opt => opt.value === service.id);
+      const serviceName = serviceOption?.label || service.id;
+
       const complexityMultiplier = complexityMultipliers[service.complexity] || 1;
       const urgencyMultiplier = urgencyMultipliers[service.urgency]?.value || 1;
       const rightsMultiplier = rightsMultipliers[service.rights] || 1;
@@ -37,9 +47,6 @@ export function useCalculator() {
 
       const price = basePrice * complexityMultiplier * urgencyMultiplier * 
                    rightsMultiplier * scopeMultiplier * expertiseMultiplier * quantity;
-
-      const serviceOption = serviceOptions[service.category]?.find(opt => opt.value === service.id);
-      const serviceName = serviceOption?.label || service.id;
 
       const finalPrice = Math.round(price);
       const finalPriceUSD = Math.round(finalPrice / MXN_TO_USD);
@@ -93,7 +100,7 @@ export function useCalculator() {
         }
       };
     }
-  }, []);
+  }, [customPricing]);
 
   const addService = useCallback((service: Service) => {
     const calculatedService = calculateServicePrice(service);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Trash2, Edit2, Check, X, Minus, Plus } from 'lucide-react';
-import { SelectedService } from '../types';
+import { SelectedService, Service, CustomPricing } from '../types';
 import { Currency } from '../hooks/useCalculator';
 import { VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
 
@@ -17,6 +17,8 @@ interface ServiceListProps {
   onClientTypeChange: (type: ClientDiscountType) => void;
   maintenance: MaintenanceType;
   onMaintenanceChange: (maintenance: MaintenanceType) => void;
+  customPricing: CustomPricing | null;
+  calculateServicePrice: (service: Service) => SelectedService;
 }
 
 export default function ServiceList({ 
@@ -31,7 +33,9 @@ export default function ServiceList({
   clientType,
   onClientTypeChange,
   maintenance,
-  onMaintenanceChange
+  onMaintenanceChange,
+  customPricing,
+  calculateServicePrice
 }: ServiceListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -84,6 +88,23 @@ export default function ServiceList({
     return price.toLocaleString(currency === 'MXN' ? 'es-MX' : 'en-US');
   };
 
+  const handleServiceUpdate = (index: number, field: keyof Service, value: string | number) => {
+    const service = services[index];
+    const updatedService = {
+      ...service,
+      [field]: value
+    };
+    
+    // Recalcular precios con los nuevos parámetros
+    const recalculatedService = calculateServicePrice(updatedService);
+    onUpdateService(index, recalculatedService);
+  };
+
+  // Agregar la función de ordenamiento
+  const sortAlphabetically = <T extends { label: string }>(items: T[]): T[] => {
+    return [...items].sort((a, b) => a.label.localeCompare(b.label));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -103,18 +124,20 @@ export default function ServiceList({
       
       <div className="space-y-3">
         {services.map((service, index) => (
-          <div 
-            key={index}
-            className="bg-white rounded-lg shadow p-3 md:p-4"
-          >
+          <div key={index} className="bg-white rounded-lg shadow p-3 md:p-4">
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="space-y-1 flex-1">
                   <h4 className="font-medium text-gray-800">
                     {service.name}
                   </h4>
+                  <p className="text-sm text-gray-500">
+                    Complejidad: {service.complexity} • 
+                    Urgencia: {service.urgency} • 
+                    Alcance: {service.scope}
+                  </p>
                 </div>
-                <div className="flex items-center justify-between sm:justify-end gap-4">
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
                     <button
                       onClick={() => updateQuantity(index, -1)}
@@ -133,70 +156,175 @@ export default function ServiceList({
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
+
                   <div className="text-right">
                     <div className="font-semibold text-gray-800 text-lg">
                       ${getDisplayPrice(service)} {currency}
                     </div>
                   </div>
-                  <button
-                    onClick={() => onRemoveService(index)}
-                    className="text-red-500 hover:text-red-600 transition-colors p-1"
-                    title="Eliminar servicio"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setEditingIndex(index)}
+                      className="p-1 text-gray-400 hover:text-indigo-600 rounded-full
+                               hover:bg-indigo-50 transition-colors"
+                      title="Editar servicio"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => onRemoveService(index)}
+                      className="p-1 text-gray-400 hover:text-red-600 rounded-full
+                               hover:bg-red-50 transition-colors"
+                      title="Eliminar servicio"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="group relative bg-gray-50 rounded-md p-3">
-                <div className="pr-10">
-                  {editingIndex === index ? (
-                    <div className="flex flex-col gap-2">
-                      <textarea
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        placeholder="Describe los detalles específicos del servicio..."
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 min-h-[80px]"
-                        autoFocus
-                      />
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => saveDescription(index)}
-                          className="text-green-500 hover:text-green-600 p-2 rounded-md hover:bg-green-50"
-                          title="Guardar descripción"
-                        >
-                          <Check className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={cancelEditing}
-                          className="text-gray-500 hover:text-gray-600 p-2 rounded-md hover:bg-gray-50"
-                          title="Cancelar"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {service.description ? (
-                        <p className="text-sm text-gray-600">{service.description}</p>
-                      ) : (
-                        <p className="text-sm text-gray-400 italic">
-                          Agregar descripción del servicio...
-                        </p>
-                      )}
-                      <button
-                        onClick={() => startEditing(index)}
-                        className="absolute right-2 top-2 p-2 rounded-md text-gray-400 
-                                 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        title="Editar descripción"
+              {editingIndex === index && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Complejidad
+                      </label>
+                      <select
+                        value={service.complexity}
+                        onChange={(e) => handleServiceUpdate(index, 'complexity', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                       >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
+                        <option value="simple">Simple (1x)</option>
+                        <option value="moderado">Moderado (1.5x)</option>
+                        <option value="complejo">Complejo (2x)</option>
+                        <option value="premium">Premium (2.5x)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Urgencia
+                      </label>
+                      <select
+                        value={service.urgency}
+                        onChange={(e) => handleServiceUpdate(index, 'urgency', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        <option value="estandar">Estándar (14 días)</option>
+                        <option value="rapido">Rápido (7 días, +50%)</option>
+                        <option value="urgente">Urgente (3 días, +100%)</option>
+                        <option value="inmediato">Inmediato (24h, +150%)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alcance
+                      </label>
+                      <select
+                        value={service.scope}
+                        onChange={(e) => handleServiceUpdate(index, 'scope', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        <option value="personal">Personal (1x)</option>
+                        <option value="comercial-local">Comercial Local (1.5x)</option>
+                        <option value="comercial-nacional">Comercial Nacional (2x)</option>
+                        <option value="comercial-internacional">Comercial Internacional (2.5x)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de Empresa
+                      </label>
+                      <select
+                        value={service.rights}
+                        onChange={(e) => handleServiceUpdate(index, 'rights', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        <option value="pequena">Pequeña Empresa (1x)</option>
+                        <option value="profesional">Profesional (1.5x)</option>
+                        <option value="empresarial">Empresarial (2x)</option>
+                        <option value="corporativo">Corporativo (2.5x)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Experiencia
+                      </label>
+                      <select
+                        value={service.expertise}
+                        onChange={(e) => handleServiceUpdate(index, 'expertise', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        <option value="junior">Junior (0.8x)</option>
+                        <option value="mid">Mid-Level (1x)</option>
+                        <option value="senior">Senior (1.5x)</option>
+                        <option value="expert">Expert (2x)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Categoría
+                      </label>
+                      <select
+                        value={service.category}
+                        onChange={(e) => handleServiceUpdate(index, 'category', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        {sortAlphabetically(customPricing?.categories || []).map(cat => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Servicio
+                      </label>
+                      <select
+                        value={service.id}
+                        onChange={(e) => handleServiceUpdate(index, 'id', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      >
+                        {sortAlphabetically(customPricing?.service_options[service.category] || []).map(svc => (
+                          <option key={svc.value} value={svc.value}>
+                            {svc.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descripción
+                    </label>
+                    <textarea
+                      value={service.description}
+                      onChange={(e) => handleServiceUpdate(index, 'description', e.target.value)}
+                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      rows={3}
+                      placeholder="Agregar detalles específicos del servicio..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => setEditingIndex(null)}
+                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Guardar
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ))}
