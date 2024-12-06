@@ -196,7 +196,7 @@ export default function QuoteCalculator({
               ) : (
                 <>
                   <FileText className="w-5 h-5" />
-                  Generar Cotización
+                  Guardar Cotización
                 </>
               )}
             </button>

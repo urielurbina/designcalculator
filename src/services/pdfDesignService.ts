@@ -54,56 +54,73 @@ export interface PDFDesignConfig {
 export async function savePDFDesign(userId: string, design: PDFDesignConfig) {
   console.log('Guardando diseño para usuario:', userId);
   
-  const { data, error } = await supabase
-    .from('pdf_designs')
-    .upsert(
-      {
-        user_id: userId,
-        design_config: design,
-        updated_at: new Date().toISOString()
-      },
-      {
-        onConflict: 'user_id',  // Especifica la columna para el conflicto
-        ignoreDuplicates: false  // Actualiza si existe
-      }
-    );
+  try {
+    if (!userId?.trim()) {
+      throw new Error('ID de usuario no válido');
+    }
 
-  if (error) {
-    console.error('Error al guardar diseño:', error);
+    const dataToSave = {
+      user_id: userId,
+      design_config: design,
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('Datos a guardar:', dataToSave);
+
+    const { data, error } = await supabase
+      .from('pdf_designs')
+      .upsert(dataToSave, {
+        onConflict: 'user_id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error de Supabase al guardar diseño:', error);
+      throw new Error(error.message || 'Error al guardar el diseño en la base de datos');
+    }
+
+    console.log('Diseño guardado/actualizado correctamente:', data);
+    return data;
+  } catch (error) {
+    console.error('Error en savePDFDesign:', error);
     throw error;
   }
-
-  console.log('Diseño guardado correctamente:', data);
-  return data;
 }
 
 export async function loadPDFDesign(userId: string) {
-  console.log('Cargando diseño para:', userId);
+  if (!userId?.trim()) {
+    console.error('ID de usuario no válido');
+    throw new Error('ID de usuario no válido');
+  }
+
+  console.log('Cargando diseño para usuario:', userId);
   
   try {
     const { data, error } = await supabase
       .from('pdf_designs')
-      .select('design_config')
+      .select('*')
       .eq('user_id', userId)
       .single();
 
-    console.log('Respuesta de Supabase:', { data, error });
+    console.log('Respuesta completa de Supabase:', { data, error });
 
-    // Si hay error pero no es de "no data", lanzamos el error
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log('No se encontró diseño guardado para el usuario');
+        return null;
+      }
       console.error('Error al cargar diseño:', error);
-      throw error;
+      throw new Error(`Error al cargar el diseño: ${error.message}`);
     }
 
-    // Si hay datos, los retornamos
-    if (data?.design_config) {
-      console.log('Diseño encontrado:', data.design_config);
-      return data.design_config as PDFDesignConfig;
+    if (!data?.design_config) {
+      console.log('No hay configuración de diseño guardada');
+      return null;
     }
 
-    // Si no hay datos, retornamos null
-    console.log('No se encontró diseño guardado');
-    return null;
+    return data.design_config as PDFDesignConfig;
   } catch (error) {
     console.error('Error inesperado al cargar diseño:', error);
     throw error;

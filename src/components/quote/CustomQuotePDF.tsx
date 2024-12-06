@@ -350,8 +350,18 @@ export const CustomQuotePDFPreview: React.FC<PreviewWrapperProps> = ({
 }) => {
   console.log('Renderizando CustomQuotePDFPreview con props:', props);
   
+  const [key, setKey] = React.useState(0);
+  
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setKey(prev => prev + 1);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
-    <PDFViewer width={width} height={height}>
+    <PDFViewer width={width} height={height} key={key}>
       <CustomQuotePDF {...props} />
     </PDFViewer>
   );

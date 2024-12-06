@@ -210,49 +210,59 @@ export default function PDFDesignPanel() {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      console.log('ID de usuario actual:', user.id);
-      loadPDFDesign(user.id)
-        .then((savedConfig) => {
-          console.log('Diseño cargado:', savedConfig);
-          if (savedConfig) {
-            const completeConfig: PDFDesignConfig = {
-              ...defaultConfig,
-              ...savedConfig,
-              fontSize: {
-                ...defaultConfig.fontSize,
-                ...(savedConfig.fontSize || {})
-              },
-              spacing: {
-                ...defaultConfig.spacing,
-                ...(savedConfig.spacing || {})
-              },
-              borders: {
-                ...defaultConfig.borders,
-                ...(savedConfig.borders || {})
-              },
-              serviceCard: {
-                ...defaultConfig.serviceCard,
-                ...(savedConfig.serviceCard || {})
-              },
-              priceBreakdown: {
-                ...defaultConfig.priceBreakdown,
-                ...(savedConfig.priceBreakdown || {})
-              },
-              shadows: {
-                ...defaultConfig.shadows,
-                ...(savedConfig.shadows || {})
-              }
-            };
-            console.log('Config completa:', completeConfig);
-            setConfig(completeConfig);
-          }
-        })
-        .catch((error) => {
-          console.error('Error loading PDF design:', error);
-          toast.error('Error al cargar el diseño guardado');
-        });
-    }
+    const loadDesign = async () => {
+      if (!user?.id) {
+        console.log('No hay usuario autenticado');
+        return;
+      }
+
+      try {
+        console.log('Intentando cargar diseño para usuario:', user.id);
+        const savedConfig = await loadPDFDesign(user.id);
+        console.log('Diseño cargado:', savedConfig);
+        
+        if (savedConfig) {
+          const completeConfig: PDFDesignConfig = {
+            ...defaultConfig,
+            ...savedConfig,
+            fontSize: {
+              ...defaultConfig.fontSize,
+              ...(savedConfig.fontSize || {})
+            },
+            spacing: {
+              ...defaultConfig.spacing,
+              ...(savedConfig.spacing || {})
+            },
+            borders: {
+              ...defaultConfig.borders,
+              ...(savedConfig.borders || {})
+            },
+            serviceCard: {
+              ...defaultConfig.serviceCard,
+              ...(savedConfig.serviceCard || {})
+            },
+            priceBreakdown: {
+              ...defaultConfig.priceBreakdown,
+              ...(savedConfig.priceBreakdown || {})
+            },
+            shadows: {
+              ...defaultConfig.shadows,
+              ...(savedConfig.shadows || {})
+            }
+          };
+          console.log('Config completa:', completeConfig);
+          setConfig(completeConfig);
+        } else {
+          console.log('No se encontró diseño guardado, usando configuración por defecto');
+          setConfig(defaultConfig);
+        }
+      } catch (error) {
+        console.error('Error al cargar el diseño:', error);
+        toast.error('Error al cargar el diseño guardado');
+      }
+    };
+
+    loadDesign();
   }, [user]);
 
   if (loading) {
@@ -279,15 +289,46 @@ export default function PDFDesignPanel() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user?.id) {
+      toast.error('Debes iniciar sesión para guardar el diseño');
+      return;
+    }
 
     setSaving(true);
     try {
-      await savePDFDesign(user.id, config);
+      // Validamos que la configuración sea válida
+      if (!config) {
+        throw new Error('La configuración no es válida');
+      }
+
+      console.log('Intentando guardar diseño para usuario:', user.id);
+      console.log('Configuración a guardar:', config);
+      
+      const result = await savePDFDesign(user.id, config);
+      
+      if (!result) {
+        throw new Error('No se pudo confirmar el guardado del diseño');
+      }
+
+      console.log('Resultado del guardado:', result);
       toast.success('Diseño guardado correctamente');
     } catch (error) {
-      console.error('Error saving PDF design:', error);
-      toast.error('Error al guardar el diseño');
+      console.error('Error detallado al guardar el diseño:', {
+        error,
+        userId: user.id,
+        configSize: JSON.stringify(config).length
+      });
+      
+      // Manejamos diferentes tipos de errores
+      let errorMessage = 'Error al guardar el diseño. Por favor, intenta de nuevo.';
+      
+      if (error instanceof Error) {
+        errorMessage = `Error al guardar el diseño: ${error.message}`;
+      } else if (typeof error === 'string') {
+        errorMessage = `Error al guardar el diseño: ${error}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -296,9 +337,11 @@ export default function PDFDesignPanel() {
   const handlePreviewToggle = () => {
     if (!previewMode) {
       setIsLoadingPreview(true);
-      setPreviewMode(true);
       setTimeout(() => {
-        setIsLoadingPreview(false);
+        setPreviewMode(true);
+        requestAnimationFrame(() => {
+          setIsLoadingPreview(false);
+        });
       }, 100);
     } else {
       setPreviewMode(false);
@@ -692,15 +735,17 @@ export default function PDFDesignPanel() {
                 <p className="text-sm text-gray-500">Esto puede tomar unos segundos</p>
               </div>
             ) : (
-              <CustomQuotePDFPreview
-                quoteInfo={sampleQuoteInfo}
-                services={sampleServices}
-                totalPrice={{ mxn: 7000, usd: 350 }}
-                currency="MXN"
-                design={config}
-                width="100%"
-                height="100%"
-              />
+              <div style={{ width: '100%', height: '100%' }} key={Date.now()}>
+                <CustomQuotePDFPreview
+                  quoteInfo={sampleQuoteInfo}
+                  services={sampleServices}
+                  totalPrice={{ mxn: 7000, usd: 350 }}
+                  currency="MXN"
+                  design={config}
+                  width="100%"
+                  height="100%"
+                />
+              </div>
             )}
           </div>
         </div>
