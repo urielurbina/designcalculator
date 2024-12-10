@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -11,24 +12,24 @@ export default function AuthCallback() {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Auth error:', error);
+          toast.error(`Error de autenticación: ${error.message}`);
           throw error;
         }
         
         if (session) {
-          // Verificar si el usuario ya tiene configuración de precios
           const { data: existingPricing, error: pricingError } = await supabase
             .from('custom_pricing')
-            .select()
+            .select('*')
             .eq('user_id', session.user.id)
             .single();
 
           if (pricingError && pricingError.code !== 'PGRST116') {
-            console.error('Error checking pricing:', pricingError);
+            toast.error(`Error al verificar pricing: ${pricingError.message}`);
           }
 
-          // Si no existe configuración, crear una nueva
           if (!existingPricing) {
+            toast.loading('Configurando tu cuenta...', { duration: 2000 });
+            
             const initialData = {
               user_id: session.user.id,
               base_rates: {
@@ -996,30 +997,32 @@ export default function AuthCallback() {
               ]
             };
 
-            const { error: insertError } = await supabase
+            const { data: insertedData, error: insertError } = await supabase
               .from('custom_pricing')
-              .insert([initialData]);
+              .insert([initialData])
+              .select();
 
             if (insertError) {
-              console.error('Error creating pricing:', insertError);
+              toast.error(`Error al crear configuración: ${insertError.message}`);
             } else {
-              console.log('Initial pricing configuration created successfully');
+              toast.success('Configuración inicial creada exitosamente');
             }
           }
 
-          console.log('Session found, redirecting to /cotizar');
+          toast.success('¡Bienvenido!');
           navigate('/cotizar', { replace: true });
         } else {
-          console.log('No session found, redirecting to /login');
+          toast.error('No se encontró sesión');
           navigate('/login', { replace: true });
         }
       } catch (error) {
-        console.error('Error in auth callback:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        toast.error(`Error en la autenticación: ${errorMessage}`);
         navigate('/login', { replace: true });
       }
     };
 
-    setTimeout(handleAuthCallback, 100);
+    handleAuthCallback();
   }, [navigate]);
 
   return (
