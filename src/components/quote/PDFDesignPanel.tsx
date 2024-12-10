@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { CustomQuotePDFPreview } from './CustomQuotePDF';
 import { ServiceId, ServiceCategory, ComplexityLevel, UrgencyLevel, RightsLevel, ScopeLevel, ExpertiseLevel } from '@/types';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface PDFDesignConfig {
   primaryColor: string;
@@ -185,7 +185,7 @@ const pdfTemplates: PDFTemplate[] = [
   {
     id: 'warm-sunset',
     name: 'Atardecer Cálido',
-    description: 'Colores c��lidos y acogedores',
+    description: 'Colores clidos y acogedores',
     thumbnail: '/templates/warm-sunset.png',
     config: {
       ...defaultConfig,
@@ -537,7 +537,7 @@ export default function PDFDesignPanel() {
     try {
       // Validamos que la configuración sea válida
       if (!config) {
-        throw new Error('La configuración no es v��lida');
+        throw new Error('La configuración no es válida');
       }
 
       console.log('Intentando guardar diseño para usuario:', user.id);
@@ -686,39 +686,89 @@ export default function PDFDesignPanel() {
 
       {showAdvancedSettings && (
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          {/* Header del panel */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-            <Palette className="w-5 h-5 text-indigo-600" />
+            <Settings className="w-5 h-5 text-indigo-600" />
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                Diseño del PDF
+                Ajustes Avanzados
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Personaliza el aspecto de tus cotizaciones PDF
+                Personaliza todos los aspectos de tu cotización
               </p>
             </div>
           </div>
 
-          {/* Tabs para móvil */}
+          {/* Tabs de navegación - Visible solo en desktop */}
+          <div className="hidden sm:flex space-x-4 mb-6 border-b border-gray-200">
+            {[
+              { id: 'colors', icon: <PaintBucket className="w-4 h-4" />, label: 'Colores' },
+              { id: 'typography', icon: <Type className="w-4 h-4" />, label: 'Tipografía' },
+              { id: 'layout', icon: <Layout className="w-4 h-4" />, label: 'Diseño' },
+              { id: 'header-footer', icon: <Image className="w-4 h-4" />, label: 'Encabezado y Pie' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors
+                  ${activeTab === tab.id 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Selector de tabs para móvil */}
           <div className="sm:hidden mb-6">
             <select 
-              className="w-full rounded-lg border-gray-300"
+              className="w-full rounded-lg border-gray-300 py-2 pl-3 pr-10 text-base focus:outline-none 
+                         focus:ring-indigo-500 focus:border-indigo-500"
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
             >
-              <option value="colors">Colores</option>
-              <option value="typography">Tipografía</option>
-              <option value="layout">Diseño y Espaciado</option>
-              <option value="header-footer">Encabezado y Pie</option>
+              <option value="colors">🎨 Colores</option>
+              <option value="typography">📝 Tipografía</option>
+              <option value="layout">📐 Diseño</option>
+              <option value="header-footer">🖼️ Encabezado y Pie</option>
             </select>
           </div>
 
-          {/* Panel de configuración */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Panel izquierdo (Colores) - Visible en móvil solo si está seleccionado */}
+          {/* Contenedor principal de los paneles */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Panel izquierdo (Colores) */}
             <div className={`lg:col-span-1 ${activeTab === 'colors' || !isMobile ? 'block' : 'hidden'}`}>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                  <PaintBucket className="w-4 h-4" />
+                  Esquema de Colores
+                  <span className="hidden sm:inline text-xs text-gray-500 font-normal">(Define la paleta de colores)</span>
+                </h3>
+                {/* Mantener todo el contenido existente del panel de colores */}
+                {/* ... contenido existente del panel de colores ... */}
+              </div>
+            </div>
+
+            {/* Panel derecho */}
+            <div className={`lg:col-span-2 ${(activeTab !== 'colors' || !isMobile) ? 'block' : 'hidden'}`}>
               <div className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
+                {/* Panel de Tipografía */}
+                <div className={`bg-gray-50 rounded-lg p-4 ${activeTab === 'typography' || !isMobile ? 'block' : 'hidden'}`}>
                   <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                    <Type className="w-4 h-4" />
+                    Tipografía
+                  </h3>
+                  {/* Mantener todo el contenido existente del panel de tipografía */}
+                  {/* ... contenido existente del panel de tipografía ... */}
+                </div>
+
+                {/* Panel de Diseño y Espaciado */}
+                <div className={`bg-gray-50 rounded-lg p-4 ${activeTab === 'layout' || !isMobile ? 'block' : 'hidden'}`}>
+                  <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                    <Layout className="w-4 h-4" />
+                    Diseño y Espaciado
                     <PaintBucket className="w-4 h-4" />
                     Esquema de Colores
                     <span className="hidden sm:inline text-xs text-gray-500 font-normal">(Define la paleta de colores)</span>
