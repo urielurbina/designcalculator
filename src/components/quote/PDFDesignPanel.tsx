@@ -737,221 +737,194 @@ export default function PDFDesignPanel() {
           </div>
 
           {/* Contenedor principal de los paneles */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Panel izquierdo (Colores) */}
-            <div className={`lg:col-span-1 ${activeTab === 'colors' || !isMobile ? 'block' : 'hidden'}`}>
+          <div className="space-y-6">
+            {/* Panel de Colores */}
+            <div className={activeTab === 'colors' ? 'block' : 'hidden'}>
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                   <PaintBucket className="w-4 h-4" />
                   Esquema de Colores
-                  <span className="hidden sm:inline text-xs text-gray-500 font-normal">(Define la paleta de colores)</span>
                 </h3>
-                {/* Mantener todo el contenido existente del panel de colores */}
-                {/* ... contenido existente del panel de colores ... */}
-              </div>
-            </div>
-
-            {/* Panel derecho */}
-            <div className={`lg:col-span-2 ${(activeTab !== 'colors' || !isMobile) ? 'block' : 'hidden'}`}>
-              <div className="space-y-6">
-                {/* Panel de Tipografía */}
-                <div className={`bg-gray-50 rounded-lg p-4 ${activeTab === 'typography' || !isMobile ? 'block' : 'hidden'}`}>
-                  <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
-                    <Type className="w-4 h-4" />
-                    Tipografía
-                  </h3>
-                  {/* Mantener todo el contenido existente del panel de tipografía */}
-                  {/* ... contenido existente del panel de tipografía ... */}
-                </div>
-
-                {/* Panel de Diseño y Espaciado */}
-                <div className={`bg-gray-50 rounded-lg p-4 ${activeTab === 'layout' || !isMobile ? 'block' : 'hidden'}`}>
-                  <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
-                    <Layout className="w-4 h-4" />
-                    Diseño y Espaciado
-                    <PaintBucket className="w-4 h-4" />
-                    Esquema de Colores
-                    <span className="hidden sm:inline text-xs text-gray-500 font-normal">(Define la paleta de colores)</span>
-                  </h3>
-                  <div className="space-y-6">
-                    {/* Color Groups */}
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores Principales</h4>
-                      <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Color Principal
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.primaryColor}
-                              onChange={(e) => handleChange('primaryColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.primaryColor}
-                              onChange={(e) => handleChange('primaryColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                {/* Contenido del panel de colores */}
+                <div className="space-y-4">
+                  {/* Color Groups */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores Principales</h4>
+                    <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Color Principal
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.primaryColor}
+                            onChange={(e) => handleChange('primaryColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.primaryColor}
+                            onChange={(e) => handleChange('primaryColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Color de Acento
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.accentColor}
-                              onChange={(e) => handleChange('accentColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.accentColor}
-                              onChange={(e) => handleChange('accentColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Color de Acento
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.accentColor}
+                            onChange={(e) => handleChange('accentColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.accentColor}
+                            onChange={(e) => handleChange('accentColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores de Texto</h4>
-                      <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Texto Principal
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.textColor}
-                              onChange={(e) => handleChange('textColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.textColor}
-                              onChange={(e) => handleChange('textColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores de Texto</h4>
+                    <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Texto Principal
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.textColor}
+                            onChange={(e) => handleChange('textColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.textColor}
+                            onChange={(e) => handleChange('textColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Texto Secundario
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.secondaryTextColor}
-                              onChange={(e) => handleChange('secondaryTextColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.secondaryTextColor}
-                              onChange={(e) => handleChange('secondaryTextColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Texto Secundario
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.secondaryTextColor}
+                            onChange={(e) => handleChange('secondaryTextColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.secondaryTextColor}
+                            onChange={(e) => handleChange('secondaryTextColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores de Fondo</h4>
-                      <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Fondo Principal
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.backgroundColor}
-                              onChange={(e) => handleChange('backgroundColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.backgroundColor}
-                              onChange={(e) => handleChange('backgroundColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Colores de Fondo</h4>
+                    <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Fondo Principal
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.backgroundColor}
+                            onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.backgroundColor}
+                            onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">
-                            Fondo de Tarjetas
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={config.serviceCard.backgroundColor}
-                              onChange={(e) => handleChange('serviceCard.backgroundColor', e.target.value)}
-                              className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={config.serviceCard.backgroundColor}
-                              onChange={(e) => handleChange('serviceCard.backgroundColor', e.target.value)}
-                              className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
-                            />
-                          </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Fondo de Tarjetas
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={config.serviceCard.backgroundColor}
+                            onChange={(e) => handleChange('serviceCard.backgroundColor', e.target.value)}
+                            className="h-10 w-14 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={config.serviceCard.backgroundColor}
+                            onChange={(e) => handleChange('serviceCard.backgroundColor', e.target.value)}
+                            className="flex-1 h-10 rounded-lg border border-gray-300 px-2 sm:px-3 text-sm"
+                          />
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Color Presets */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Combinaciones Predefinidas</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {[
-                          { name: 'Monocromático', colors: ['#000000', '#404040', '#808080', '#ffffff'] },
-                          { name: 'Profesional', colors: ['#1a365d', '#2b6cb0', '#ebf8ff', '#ffffff'] },
-                          { name: 'Creativo', colors: ['#744210', '#f6ad55', '#fffaf0', '#ffffff'] },
-                          { name: 'Moderno', colors: ['#1a202c', '#4a5568', '#f7fafc', '#ffffff'] },
-                        ].map((preset, index) => (
-                          <button
-                            key={index}
-                            className="p-2 rounded-lg border border-gray-200 hover:border-indigo-500 transition-colors"
-                            onClick={() => {
-                              handleChange('primaryColor', preset.colors[0]);
-                              handleChange('accentColor', preset.colors[1]);
-                              handleChange('backgroundColor', preset.colors[2]);
-                              handleChange('serviceCard.backgroundColor', preset.colors[3]);
-                            }}
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="flex gap-1">
-                                {preset.colors.map((color, i) => (
-                                  <div
-                                    key={i}
-                                    className="w-6 h-6 rounded-full border border-gray-200"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                ))}
-                              </div>
-                              <span className="text-xs text-gray-600">{preset.name}</span>
+                  {/* Color Presets */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wider">Combinaciones Predefinidas</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { name: 'Monocromático', colors: ['#000000', '#404040', '#808080', '#ffffff'] },
+                        { name: 'Profesional', colors: ['#1a365d', '#2b6cb0', '#ebf8ff', '#ffffff'] },
+                        { name: 'Creativo', colors: ['#744210', '#f6ad55', '#fffaf0', '#ffffff'] },
+                        { name: 'Moderno', colors: ['#1a202c', '#4a5568', '#f7fafc', '#ffffff'] },
+                      ].map((preset, index) => (
+                        <button
+                          key={index}
+                          className="p-2 rounded-lg border border-gray-200 hover:border-indigo-500 transition-colors"
+                          onClick={() => {
+                            handleChange('primaryColor', preset.colors[0]);
+                            handleChange('accentColor', preset.colors[1]);
+                            handleChange('backgroundColor', preset.colors[2]);
+                            handleChange('serviceCard.backgroundColor', preset.colors[3]);
+                          }}
+                        >
+                          <div className="flex flex-col gap-1">
+                            <div className="flex gap-1">
+                              {preset.colors.map((color, i) => (
+                                <div
+                                  key={i}
+                                  className="w-6 h-6 rounded-full border border-gray-200"
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
                             </div>
-                          </button>
-                        ))}
-                      </div>
+                            <span className="text-xs text-gray-600">{preset.name}</span>
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Panel derecho - Visible en móvil solo si está seleccionado */}
-            <div className={`lg:col-span-2 ${(activeTab === 'typography' || activeTab === 'layout' || activeTab === 'header-footer' || !isMobile) ? 'block' : 'hidden'}`}>
-              <div className="space-y-4 sm:space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
+            {/* Panel de Tipografía */}
+            <div className={activeTab === 'typography' ? 'block' : 'hidden'}>
+              <div className="space-y-6">
+                {/* Tamaños de Fuente */}
+                <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                     <Type className="w-4 h-4" />
                     Tipografía
@@ -992,10 +965,50 @@ export default function PDFDesignPanel() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
+                {/* Fuentes */}
+                {/* <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
-                     Diseño y Espaciado
-                    <span className="text-xs text-gray-500 font-normal">(Ajusta la disposición)</span>
+                    <Type className="w-4 h-4" />
+                    Fuentes
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Fuente Principal
+                      </label>
+                      <input
+                        type="text"
+                        value={config.fontFamily}
+                        onChange={(e) => handleChange('fontFamily', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: Helvetica"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Fuente Secundaria
+                      </label>
+                      <input
+                        type="text"
+                        value={config.secondaryFontFamily}
+                        onChange={(e) => handleChange('secondaryFontFamily', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: Arial"
+                      />
+                    </div>
+                  </div>
+                </div> */}
+              </div>
+            </div>
+
+            {/* Panel de Diseño */}
+            <div className={activeTab === 'layout' ? 'block' : 'hidden'}>
+              <div className="space-y-6">
+                {/* Diseño y Espaciado */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                    <Layout className="w-4 h-4" />
+                    Diseño y Espaciado
                   </h3>
                   <div className="space-y-4">
                     <div>
@@ -1063,10 +1076,10 @@ export default function PDFDesignPanel() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
+                {/* Líneas Divisoras */}
+                <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                     ✏️ Líneas Divisoras
-                    <span className="text-xs text-gray-500 font-normal">(Separadores)</span>
                   </h3>
                   <div className="space-y-4">
                     <div>
@@ -1113,11 +1126,16 @@ export default function PDFDesignPanel() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
+            {/* Panel de Encabezado y Pie */}
+            <div className={activeTab === 'header-footer' ? 'block' : 'hidden'}>
+              <div className="space-y-6">
+                {/* Logo y Encabezado */}
+                <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                     🖼️ Logo y Encabezado
-                    <span className="text-xs text-gray-500 font-normal">(Configura la parte superior)</span>
                   </h3>
                   <div className="space-y-4">
                     <div>
@@ -1136,52 +1154,52 @@ export default function PDFDesignPanel() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
-                📄 Encabezado y Pie
-                <span className="text-xs text-gray-500 font-normal">(Textos adicionales)</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex flex-col gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={config.showHeader}
-                      onChange={(e) => handleChange('showHeader', e.target.checked)}
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-sm text-gray-600">Mostrar Encabezado</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={config.showFooter}
-                      onChange={(e) => handleChange('showFooter', e.target.checked)}
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-sm text-gray-600">Mostrar Pie de Página</span>
-                  </label>
-                </div>
-                {config.showFooter && (
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Texto del Pie
-                    </label>
-                    <input
-                      type="text"
-                      value={config.footerText}
-                      onChange={(e) => handleChange('footerText', e.target.value)}
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      placeholder="Ej: © {year} Todos los derechos reservados"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Usa {'{year}'} para insertar el año actual
-                    </p>
+                {/* Encabezado y Pie */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                    📄 Encabezado y Pie
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={config.showHeader}
+                          onChange={(e) => handleChange('showHeader', e.target.checked)}
+                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm text-gray-600">Mostrar Encabezado</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={config.showFooter}
+                          onChange={(e) => handleChange('showFooter', e.target.checked)}
+                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm text-gray-600">Mostrar Pie de Página</span>
+                      </label>
+                    </div>
+                    {config.showFooter && (
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Texto del Pie
+                        </label>
+                        <input
+                          type="text"
+                          value={config.footerText}
+                          onChange={(e) => handleChange('footerText', e.target.value)}
+                          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          placeholder="Ej: © {year} Todos los derechos reservados"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Usa {'{year}'} para insertar el año actual
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
