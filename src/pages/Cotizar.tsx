@@ -27,6 +27,7 @@ import { CustomQuotePDFPreview } from '../components/quote/CustomQuotePDF';
 import { loadPDFDesign } from '../services/pdfDesignService';
 import { getQuoteById } from '../services/quoteService';
 import { toast } from 'react-hot-toast';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 type ActivePanel = 'quotes' | 'freelancer' | 'clients' | 'pdf-design' | 'services';
 
@@ -62,7 +63,15 @@ interface QuoteService {
 
 export default function Cotizar() {
   const { user, signOut } = useAuth();
-  const [activePanel, setActivePanel] = useState<ActivePanel>('quotes');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  const activePanel: ActivePanel = (searchParams.get('panel') as ActivePanel) || 'quotes';
+
+  const handlePanelChange = (panel: ActivePanel) => {
+    setSearchParams({ panel });
+  };
+
   const [isCreating, setIsCreating] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -398,7 +407,7 @@ export default function Cotizar() {
               </h1>
               <div className="hidden md:flex items-center gap-4">
                 <button
-                  onClick={() => setActivePanel('quotes')}
+                  onClick={() => handlePanelChange('quotes')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     activePanel === 'quotes'
                       ? 'text-indigo-600 bg-indigo-50'
@@ -411,7 +420,7 @@ export default function Cotizar() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActivePanel('freelancer')}
+                  onClick={() => handlePanelChange('freelancer')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     activePanel === 'freelancer'
                       ? 'text-indigo-600 bg-indigo-50'
@@ -424,7 +433,7 @@ export default function Cotizar() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActivePanel('clients')}
+                  onClick={() => handlePanelChange('clients')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     activePanel === 'clients'
                       ? 'text-indigo-600 bg-indigo-50'
@@ -437,7 +446,7 @@ export default function Cotizar() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActivePanel('pdf-design')}
+                  onClick={() => handlePanelChange('pdf-design')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     activePanel === 'pdf-design'
                       ? 'text-indigo-600 bg-indigo-50'
@@ -450,7 +459,7 @@ export default function Cotizar() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActivePanel('services')}
+                  onClick={() => handlePanelChange('services')}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     activePanel === 'services'
                       ? 'text-indigo-600 bg-indigo-50'
