@@ -111,8 +111,7 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
   },
   servicesSection: {
     marginVertical: 15,
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
   },
   serviceCard: {
     marginBottom: design.spacing.element,
@@ -177,6 +176,7 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     borderRadius: design.serviceCard.borderRadius,
     borderWidth: design.borders.width,
     borderColor: design.serviceCard.borderColor,
+    break: 'avoid',
     ...(design.serviceCard.shadow && design.shadows.enabled && {
       shadowColor: design.shadows.color,
       shadowOpacity: design.shadows.opacity,
@@ -184,8 +184,7 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     }),
   },
   totalSection: {
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
     marginTop: design.spacing.section,
   },
   totalRow: {
@@ -235,8 +234,7 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     marginTop: 'auto',
     paddingTop: 20,
     marginBottom: 50,
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
   },
   termsTitle: {
     fontSize: 10,
@@ -260,29 +258,25 @@ const createStyles = (design: PDFDesignConfig) => StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     minHeight: '100%',
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
   },
   mainContent: {
     flex: 1,
   },
   serviceWrapper: {
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
     marginBottom: design.spacing.element,
   },
   infoWrapper: {
-    breakInside: 'avoid',
+    break: 'avoid',
     marginBottom: design.spacing.section,
   },
   serviceItemContainer: {
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
     marginBottom: design.spacing.element,
   },
   infoSection: {
-    breakInside: 'avoid',
-    pageBreakInside: 'avoid',
+    break: 'avoid',
     marginBottom: design.spacing.section,
   },
 });
@@ -405,7 +399,7 @@ export const CustomQuotePDF: React.FC<CustomQuotePDFProps> = ({
             </View>
 
             <View style={styles.totalSection}>
-              <View style={[styles.priceBreakdown, { breakInside: 'avoid-page' }]}>
+              <View style={styles.priceBreakdown}>
                 <View style={styles.totalRow}>
                   <Text style={styles.totalLabel}>Total</Text>
                   <Text style={styles.totalAmount}>{getDisplayPrice(totalPrice)}</Text>
