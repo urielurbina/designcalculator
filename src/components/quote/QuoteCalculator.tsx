@@ -8,7 +8,7 @@ import TermsEditor from '../TermsEditor';
 import { Service } from '../../types';
 import { FileText, Loader2 } from 'lucide-react';
 import { createQuote, generateQuoteNumber } from '../../services/quoteService';
-import { CustomPricing } from '../data/pricingcustom';
+import { CustomPricing } from '../../data/pricingcustom';
 
 interface QuoteCalculatorProps {
   freelancerData: {
@@ -86,7 +86,7 @@ export default function QuoteCalculator({
         setCustomPricing(data);
         
         // Actualizar el servicio actual con la primera categoría disponible
-        if (data?.categories.length > 0) {
+        if (data && data.categories && data.categories.length > 0) {
           setCurrentService(prev => ({
             ...prev,
             category: data.categories[0].id

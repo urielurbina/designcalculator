@@ -1,5 +1,5 @@
 import { baseRates, serviceOptions } from './pricing';
-import { BaseRates, ServiceOptions, CategoryInfo } from '../types';
+import { BaseRates, ServiceOptions, CategoryInfo, ServiceOption } from '../types';
 import { supabase } from '../lib/supabase';
 
 export interface CustomPricing {
@@ -52,7 +52,7 @@ export async function getUserCustomPricing(userId: string): Promise<CustomPricin
     service_options: Object.fromEntries(
       Object.entries(data.service_options || serviceOptions).map(([key, services]) => [
         key,
-        sortAlphabetically(services)
+        sortAlphabetically(services as ServiceOption[])
       ])
     ),
     categories: sortAlphabetically(

@@ -9,6 +9,7 @@ import ServiceForm from '../ServiceForm';
 import { useCalculator } from '../../hooks/useCalculator';
 import { getUserCustomPricing } from '../../data/pricingcustom';
 import { useAuth } from '../../contexts/AuthContext';
+import { CustomPricing } from '../../data/pricingcustom';
 
 interface EditQuoteFormProps {
   quoteId: string;
@@ -306,6 +307,7 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
                   service={currentService}
                   onChange={handleServiceChange}
                   onAdd={handleAddService}
+                  customPricing={customPricing}
                 />
               </div>
             )}
@@ -353,7 +355,7 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
                             onChange={(e) => handleServiceUpdate(index, 'category', e.target.value)}
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                           >
-                            {customPricing?.categories.map(cat => (
+                            {customPricing?.categories.map((cat: { id: string; label: string }) => (
                               <option key={cat.id} value={cat.id}>
                                 {cat.label}
                               </option>
@@ -371,7 +373,7 @@ export default function EditQuoteForm({ quoteId, onClose }: EditQuoteFormProps) 
                             onChange={(e) => handleServiceUpdate(index, 'id', e.target.value)}
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                           >
-                            {customPricing?.service_options[service.category]?.map(svc => (
+                            {customPricing?.service_options[service.category]?.map((svc: { value: string; label: string }) => (
                               <option key={svc.value} value={svc.value}>
                                 {svc.label}
                               </option>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { useCalculator } from '../hooks/useCalculator';
-import { Service, VolumeDiscountType, ClientDiscountType, MaintenanceType } from '../types';
+import { Service, VolumeDiscountType, ClientDiscountType, MaintenanceType, SelectedService, CustomPricing } from '../types';
 import QuoteForm from './QuoteForm';
 import QuotePDF from './QuotePDF';
 import ServiceForm from './ServiceForm';
@@ -12,6 +12,7 @@ import EmailSubscriptionModal from './EmailSubscriptionModal';
 export default function PriceCalculator() {
   const servicesListRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
+  const [customPricing, setCustomPricing] = useState<CustomPricing | null>(null);
   
   const {
     selectedServices,
@@ -26,8 +27,9 @@ export default function PriceCalculator() {
     addService,
     removeService,
     updateService,
-    getTotalPrice
-  } = useCalculator();
+    getTotalPrice,
+    calculateServicePrice
+  } = useCalculator({ customPricing });
 
   const [currentService, setCurrentService] = useState<Partial<Service>>({
     category: 'identidad-corporativa',
@@ -136,12 +138,12 @@ export default function PriceCalculator() {
               <li>Genera tu cotización profesional en PDF</li>
             </ol>
           </div>
-
           {/* Service Selection Form */}
           <ServiceForm
             service={currentService}
             onChange={handleServiceChange}
             onAdd={handleAddService}
+            customPricing={customPricing}
           />
         </div>
 
@@ -161,6 +163,8 @@ export default function PriceCalculator() {
               onClientTypeChange={setClientType}
               maintenance={maintenance}
               onMaintenanceChange={setMaintenance}
+              customPricing={customPricing}
+              calculateServicePrice={calculateServicePrice}
             />
 
             <div className="mt-6 sm:mt-8">
