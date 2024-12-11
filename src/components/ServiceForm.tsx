@@ -39,13 +39,20 @@ const tooltips = {
 };
 
 export default function ServiceForm({ service, onChange, onAdd, customPricing }: ServiceFormProps) {
-  const categories = customPricing?.categories || [];
-  const services = customPricing?.service_options[service.category || ''] || [];
+  const categories = customPricing?.categories || Object.entries(serviceOptions).map(([id, _]) => ({
+    id,
+    label: id.charAt(0).toUpperCase() + id.slice(1)
+  }));
+  
+  const services = customPricing?.service_options[service.category || ''] || 
+    serviceOptions[service.category as ServiceCategory] || [];
 
   const handleCategoryChange = (category: ServiceCategory) => {
     onChange('category', category);
-    // Select the first service of the new category
-    const firstService = serviceOptions[category]?.[0]?.value;
+    // Usar el servicio correcto dependiendo de la fuente de datos
+    const availableServices = customPricing?.service_options[category] || 
+      serviceOptions[category as ServiceCategory] || [];
+    const firstService = availableServices[0]?.value;
     if (firstService) {
       onChange('id', firstService);
     }
@@ -100,6 +107,7 @@ export default function ServiceForm({ service, onChange, onAdd, customPricing }:
             onChange={(e) => handleCategoryChange(e.target.value as ServiceCategory)}
             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
+            <option value="">Seleccionar categoría</option>
             {categories.map((category: { id: string; label: string }) => (
               <option key={category.id} value={category.id}>
                 {category.label}

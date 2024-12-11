@@ -52,7 +52,7 @@ export async function signInWithGoogle() {
 export async function subscribeEmail(data: { email: string; name: string }) {
   try {
     const { data: existing, error: checkError } = await supabase
-      .from('subscriptions')
+      .from('newsletter_subscribers')
       .select('id')
       .eq('email', data.email)
       .single();
@@ -66,7 +66,7 @@ export async function subscribeEmail(data: { email: string; name: string }) {
     }
 
     const { error } = await supabase
-      .from('subscriptions')
+      .from('newsletter_subscribers')
       .insert([
         { 
           email: data.email,
@@ -89,8 +89,8 @@ export async function subscribeEmail(data: { email: string; name: string }) {
 export async function unsubscribeEmail(email: string) {
   try {
     const { error } = await supabase
-      .from('subscriptions')
-      .update({ status: 'unsubscribed' })
+      .from('newsletter_subscribers')
+      .update({ status: 'unactive' })
       .eq('email', email);
 
     if (error) throw error;

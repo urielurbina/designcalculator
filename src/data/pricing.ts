@@ -225,7 +225,7 @@ export const baseRates: BaseRates = {
 
 // Service options for each category
 export const serviceOptions: ServiceOptions = {
-  'identidad-corporativa': [
+  'Identidad Corporativa': [
     { value: 'logotipo-completo', label: 'Logotipo Completo' },
     { value: 'rediseno', label: 'Rediseño' },
     { value: 'manual', label: 'Manual de Marca' },
@@ -258,7 +258,7 @@ export const serviceOptions: ServiceOptions = {
     { value: 'vectorial', label: 'Vectorial' },
     { value: 'infografia', label: 'Infografía' }
   ],
-  'publicidad-exterior': [
+  'Publicidad Exterior': [
     { value: 'pendon', label: 'Pendón' },
     { value: 'senaletica', label: 'Señalética' },
     { value: 'valla', label: 'Valla' },
@@ -290,7 +290,7 @@ export const serviceOptions: ServiceOptions = {
     { value: 'totem', label: 'Tótem' },
     { value: 'volante', label: 'Volante' }
   ],
-  'foto-video': [
+  'Foto y Video': [
     { value: 'sesion-foto', label: 'Sesión de Fotos' },
     { value: 'foto-producto', label: 'Foto de Producto' },
     { value: 'retoque', label: 'Retoque' },
@@ -305,7 +305,7 @@ export const serviceOptions: ServiceOptions = {
     { value: 'video-croma', label: 'Video con Croma' },
     { value: 'video-youtube', label: 'Video para YouTube' }
   ],
-  'edicion-animacion': [
+  'Edición y Animación': [
     { value: 'animacion-creditos', label: 'Animación de Créditos' },
     { value: 'animacion-brochure', label: 'Animación de Brochure' },
     { value: 'animacion-textos', label: 'Animación de Textos' },
@@ -362,7 +362,7 @@ export const serviceOptions: ServiceOptions = {
     { value: 'media-kit', label: 'Media Kit' },
     { value: 'pitch-deck', label: 'Pitch Deck' }
   ],
-  'social-media': [
+  'Social Media': [
     { value: 'pack-basico', label: 'Pack Básico' },
     { value: 'pack-completo', label: 'Pack Completo' },
     { value: 'estrategia-social', label: 'Estrategia Social' },
