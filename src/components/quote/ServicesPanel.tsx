@@ -11,11 +11,12 @@ interface ServiceItemProps {
   category: ServiceCategory;
   onUpdate: (value: string, label: string, price: number) => void;
   onDelete: () => void;
+  autoFocus?: boolean;
 }
 
-const ServiceItem = ({ service, price, category, onUpdate, onDelete }: ServiceItemProps) => {
+const ServiceItem = ({ service, price, category, onUpdate, onDelete, autoFocus }: ServiceItemProps) => {
   const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(autoFocus);
   const [tempValue, setTempValue] = useState(service.value);
   const [tempLabel, setTempLabel] = useState(service.label);
   const [tempPrice, setTempPrice] = useState(price);
@@ -153,6 +154,7 @@ interface CategoryHeaderProps {
   onToggle: () => void;
   onRename: (newId: string, newLabel: string) => Promise<void>;
   onDelete: () => Promise<void>;
+  autoFocus?: boolean;
 }
 
 const CategoryHeader = ({ 
@@ -161,9 +163,10 @@ const CategoryHeader = ({
   isExpanded, 
   onToggle, 
   onRename,
-  onDelete 
+  onDelete,
+  autoFocus 
 }: CategoryHeaderProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(autoFocus);
   const [tempId, setTempId] = useState(category);
   const [tempLabel, setTempLabel] = useState(label);
   const [isSaving, setIsSaving] = useState(false);
@@ -312,6 +315,8 @@ export default function ServicesPanel() {
       label: serviceOptions[categoryId]?.[0]?.label.split(' ')[0] || categoryId
     }))
   );
+  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
+  const [newServiceId, setNewServiceId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPricing = async () => {
@@ -471,6 +476,19 @@ export default function ServicesPanel() {
         [newServiceId]: 0
       }
     }));
+    setNewServiceId(newServiceId);
+
+    // Scroll suave hacia el nuevo servicio
+    setTimeout(() => {
+      const element = document.getElementById(`service-${newServiceId}`);
+      if (element) {
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+      }
+    }, 200);
   };
 
   const toggleCategory = (category: string) => {
@@ -570,6 +588,19 @@ export default function ServicesPanel() {
       setCustomServices(newServices);
       setCustomRates(newRates);
       setExpandedCategories(prev => [...prev, newCategoryId]);
+      setNewCategoryId(newCategoryId);
+
+      // Scroll más suave hacia la nueva categoría
+      setTimeout(() => {
+        const element = document.getElementById(`category-${newCategoryId}`);
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center', // Centra el elemento en la pantalla
+            inline: 'nearest'
+          });
+        }
+      }, 200); // Aumentamos el delay para dar tiempo a que el DOM se actualice
     } catch (error) {
       console.error('Error al agregar categoría:', error);
       alert('Error al crear la nueva categoría');
@@ -614,7 +645,7 @@ export default function ServicesPanel() {
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-2">
             <div className="relative flex-1">
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -635,7 +666,7 @@ export default function ServicesPanel() {
                 <Plus className="w-4 h-4" />
                 Nueva Categoría
               </button>
-              {user && (
+              {/* {user && (
                 <button
                   onClick={() => editMode ? handleSaveChanges() : setEditMode(true)}
                   className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700
@@ -649,11 +680,11 @@ export default function ServicesPanel() {
                   ) : (
                     <>
                       <Edit2 className="w-4 h-4" />
-                      Editar
+                      Editarmee
                     </>
                   )}
                 </button>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -664,7 +695,11 @@ export default function ServicesPanel() {
               const sortedServices = sortAlphabetically(customServices[category.id] || []);
 
               return (
-                <div key={category.id} className="overflow-hidden">
+                <div 
+                  key={category.id} 
+                  id={`category-${category.id}`}
+                  className="overflow-hidden"
+                >
                   <CategoryHeader
                     category={category.id}
                     label={category.label}
@@ -672,6 +707,7 @@ export default function ServicesPanel() {
                     onToggle={() => toggleCategory(category.id)}
                     onRename={(newId, newLabel) => handleCategoryRename(category.id, newId, newLabel)}
                     onDelete={() => handleCategoryDelete(category.id)}
+                    autoFocus={category.id === newCategoryId}
                   />
                   {isExpanded && (
                     <div className="px-6 pb-4">
@@ -690,18 +726,23 @@ export default function ServicesPanel() {
 
                       <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
                         {sortedServices.map((service) => (
-                          <ServiceItem
+                          <div 
                             key={service.value}
-                            service={service}
-                            price={customRates[category.id]?.[service.value] || 0}
-                            category={category.id}
-                            onUpdate={async (newValue, newLabel, newPrice) => {
-                              await handleServiceUpdate(category.id, service.value, newValue, newLabel, newPrice);
-                            }}
-                            onDelete={async () => {
-                              await handleServiceDelete(category.id, service.value);
-                            }}
-                          />
+                            id={`service-${service.value}`}
+                          >
+                            <ServiceItem
+                              service={service}
+                              price={customRates[category.id]?.[service.value] || 0}
+                              category={category.id}
+                              onUpdate={async (newValue, newLabel, newPrice) => {
+                                await handleServiceUpdate(category.id, service.value, newValue, newLabel, newPrice);
+                              }}
+                              onDelete={async () => {
+                                await handleServiceDelete(category.id, service.value);
+                              }}
+                              autoFocus={service.value === newServiceId}
+                            />
+                          </div>
                         ))}
                         {(customServices[category.id] || []).length === 0 && (
                           <div className="p-8 text-center text-gray-500">
