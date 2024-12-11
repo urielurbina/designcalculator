@@ -35,27 +35,21 @@ export default function EmailSubscriptionModal({
     setError('');
 
     try {
-      await subscribeEmail(formData);
+      const result = await subscribeEmail(formData);
+      console.log('Subscription result:', result);
+      
+      // Si el email ya existía o se registró correctamente
       setSuccess(true);
-      // Esperar un momento antes de cerrar para mostrar el mensaje de éxito
+      if (result.existing) {
+        setError('Este email ya está suscrito. Continuando...');
+      }
+      
       setTimeout(() => {
         onSubscribe();
       }, 1500);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message === 'Este email ya está suscrito' 
-          ? 'Este email ya está suscrito. Puedes continuar.'
-          : 'Error al suscribirse. Por favor intenta de nuevo.');
-        
-        // Si el email ya está suscrito, permitir continuar
-        if (err.message === 'Este email ya está suscrito') {
-          setTimeout(() => {
-            onSubscribe();
-          }, 1500);
-        }
-      } else {
-        setError('Error al suscribirse. Por favor intenta de nuevo.');
-      }
+      console.error('Modal error:', err);
+      setError('Error al procesar la suscripción. Por favor intenta de nuevo.');
     } finally {
       setLoading(false);
     }
