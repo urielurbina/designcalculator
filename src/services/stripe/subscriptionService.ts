@@ -7,33 +7,17 @@ export interface SubscriptionStatus {
   cancelAtPeriodEnd?: boolean;
 }
 
-export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+export async function getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { isActive: false, planType: null };
-    }
-
-    const { data: subscriptions, error } = await supabase
+    const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
-
-    if (!subscriptions) {
-      return { isActive: false, planType: null };
-    }
-
-    const isActive = subscriptions.status === 'active' || subscriptions.status === 'trialing';
-
-    return {
-      isActive,
-      planType: subscriptions.plan_type,
-      currentPeriodEnd: subscriptions.current_period_end,
-      cancelAtPeriodEnd: Boolean(subscriptions.cancel_at)
-    };
+    if (error) throw error;
+    
+    return data || { status: 'inactive' };  
   } catch (error) {
     console.error('Error getting subscription status:', error);
     return { isActive: false, planType: null };
