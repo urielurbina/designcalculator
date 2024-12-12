@@ -18,15 +18,33 @@ export default function PricingPlans() {
   const handleSubscribe = async (priceId: string) => {
     try {
       setLoading(priceId);
-      const checkoutUrl: string = await createCheckoutSession(priceId);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      } else {
-        throw new Error('No se recibió URL de checkout');
+      console.log('Iniciando proceso de checkout para priceId:', priceId);
+      
+      const response = await createCheckoutSession(priceId);
+      console.log('Respuesta del checkout:', response);
+      
+      if (!response) {
+        throw new Error('No se recibió respuesta del servidor');
       }
+      
+      const checkoutUrl = response.url || response;
+      
+      if (typeof checkoutUrl !== 'string') {
+        throw new Error('URL de checkout inválida');
+      }
+      
+      console.log('Redirigiendo a:', checkoutUrl);
+      window.location.href = checkoutUrl;
+      
     } catch (error) {
-      console.error('Error initiating checkout:', error);
-      toast.error('Error al procesar el pago. Por favor intenta de nuevo.');
+      console.error('Error detallado del checkout:', error);
+      let errorMessage = 'Error al procesar el pago. Por favor intenta de nuevo.';
+      
+      if (error instanceof Error) {
+        errorMessage += ` (${error.message})`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }

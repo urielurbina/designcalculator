@@ -10,7 +10,7 @@ export interface SubscriptionStatus {
   cancelAtPeriodEnd?: boolean;
 }
 
-export async function createCheckoutSession(priceId: string): Promise<string> {
+export async function createCheckoutSession(priceId: string): Promise<{ sessionId: string; url?: string }> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -22,16 +22,29 @@ export async function createCheckoutSession(priceId: string): Promise<string> {
       },
       body: JSON.stringify({
         priceId,
+        successUrl: `${window.location.origin}/cotizar?success=true`,
+        cancelUrl: `${window.location.origin}/cotizar?canceled=true`,
         userId: user.id,
-        returnUrl: `${window.location.origin}/cotizar`
       }),
     });
 
-    const data = await response.json();
-    if (!data.url) throw new Error('No checkout URL returned');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error en el checkout');
+    }
 
-    window.location.href = data.url;
-    return data.url;
+    const data = await response.json();
+    
+    // Inicializar Stripe
+    const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+    if (!stripe) throw new Error('Stripe no pudo ser inicializado');
+
+    // Redirigir a Checkout
+    await stripe.redirectToCheckout({
+      sessionId: data.sessionId
+    });
+
+    return data;
   } catch (error) {
     console.error('Error creating checkout session:', error);
     throw error;
