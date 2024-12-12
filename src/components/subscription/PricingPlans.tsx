@@ -62,6 +62,12 @@ export default function PricingPlans() {
           </p>
         </div>
 
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            ¿Tienes un código promocional? Podrás ingresarlo en el checkout
+          </p>
+        </div>
+
         <div className="mt-12 grid gap-8 lg:grid-cols-2">
           {/* Plan Mensual */}
           <div className="bg-white rounded-2xl shadow-xl divide-y divide-gray-200">
