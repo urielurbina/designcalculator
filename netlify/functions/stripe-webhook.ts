@@ -2,13 +2,24 @@ import { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
+// Validate environment variables first
+if (!process.env.SUPABASE_URL) {
+  throw new Error('Missing SUPABASE_URL');
+}
+if (!process.env.SUPABASE_SERVICE_KEY) {
+  throw new Error('Missing SUPABASE_SERVICE_KEY');
+}
+
+console.log('Supabase URL prefix:', process.env.SUPABASE_URL.substring(0, 20));
+console.log('Supabase key prefix:', process.env.SUPABASE_SERVICE_KEY.substring(0, 20));
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 });
 
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!,
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY,
   {
     auth: {
       autoRefreshToken: false,
@@ -19,6 +30,29 @@ const supabase = createClient(
 
 export const handler: Handler = async (event) => {
   console.log('Webhook received');
+
+  // Test Supabase connection first
+  try {
+    const { data: test, error: testError } = await supabase
+      .from('subscriptions')
+      .select('count')
+      .limit(1);
+
+    if (testError) {
+      console.error('Supabase connection test failed:', testError);
+      throw new Error(`Supabase connection failed: ${testError.message}`);
+    }
+    console.log('Supabase connection test successful');
+  } catch (e) {
+    console.error('Error testing Supabase connection:', e);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: 'Database connection failed',
+        details: e instanceof Error ? e.message : 'Unknown error'
+      })
+    };
+  }
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -37,13 +71,11 @@ export const handler: Handler = async (event) => {
       throw new Error('Missing STRIPE_WEBHOOK_SECRET');
     }
 
-    // Get the raw body
     const rawBody = event.body;
     if (!rawBody) {
       throw new Error('No body received');
     }
 
-    // Parse and verify the event
     const stripeEvent = stripe.webhooks.constructEvent(
       rawBody,
       sig,
@@ -66,11 +98,9 @@ export const handler: Handler = async (event) => {
         throw new Error('No subscription ID in session');
       }
 
-      // Get subscription details
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       console.log('Retrieved subscription:', subscription.id);
 
-      // Prepare subscription data
       const subscriptionData = {
         user_id: session.client_reference_id,
         stripe_customer_id: session.customer as string,
@@ -85,7 +115,6 @@ export const handler: Handler = async (event) => {
 
       console.log('Attempting to save subscription data:', subscriptionData);
 
-      // Save to Supabase
       const { error } = await supabase
         .from('subscriptions')
         .upsert(subscriptionData);
