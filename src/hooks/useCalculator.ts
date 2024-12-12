@@ -32,7 +32,15 @@ export function useCalculator({ customPricing }: UseCalculatorProps = {}) {
   const calculateServicePrice = useCallback((service: Service): SelectedService => {
     try {
       const rates = customPricing?.base_rates || baseRates;
-      const basePrice = rates[service.category]?.[service.id] || 0;
+      
+      const categoryKey = service.category
+        .toLowerCase()
+        .replace(/ y /g, '-')
+        .replace(/ /g, '-')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      
+      const basePrice = rates[categoryKey]?.[service.id] || 0;
       
       const services = customPricing?.service_options || serviceOptions;
       const serviceOption = services[service.category]?.find(opt => opt.value === service.id);
