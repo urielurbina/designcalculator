@@ -1,13 +1,23 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LogIn } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 export default function Login() {
-  const { signInWithGoogle, user } = useAuth();
+  const { user, signInWithGoogle, loading } = useAuth();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || '/cotizar';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   if (user) {
-    return <Navigate to="/cotizar" replace />;
+    return <Navigate to={from} replace />;
   }
 
   return (
@@ -21,13 +31,7 @@ export default function Login() {
         </div>
 
         <button
-          onClick={() => {
-            try {
-              signInWithGoogle();
-            } catch (error) {
-              console.error('Error signing in:', error);
-            }
-          }}
+          onClick={() => signInWithGoogle()}
           className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 
                    rounded-lg px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 
                    hover:border-gray-400 transition-colors"

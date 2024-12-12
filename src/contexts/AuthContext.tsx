@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { signInWithGoogle, signOut, getCurrentSession, onAuthStateChange } from '../services/authService';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -11,10 +11,10 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({
+const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
-  loading: false,
+  loading: true,
   error: null,
   signInWithGoogle: async () => {},
   signOut: async () => {},
@@ -27,56 +27,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function initializeAuth() {
-      try {
-        const { session, error } = await getCurrentSession();
-        if (error) {
-          setError(error.message);
-        } else {
-          setUser(session?.user || null);
-          setSession(session);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to initialize auth');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    initializeAuth();
-
-    const subscription = onAuthStateChange((session) => {
-      setUser(session?.user || null);
+    // Verificar sesión actual
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => {
-      subscription.data.subscription.unsubscribe();
-    };
+    // Escuchar cambios en la autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignInWithGoogle = async () => {
+  const signInWithGoogle = async () => {
     try {
       setError(null);
-      const { error } = await signInWithGoogle();
-      if (error) {
-        setError(error.message);
-      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      });
+      if (error) throw error;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
+      console.error('Error signing in with Google:', err);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión con Google');
     }
   };
 
-  const handleSignOut = async () => {
+  const signOut = async () => {
     try {
       setError(null);
-      const { error } = await signOut();
-      if (error) {
-        setError(error.message);
-      }
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign out');
+      console.error('Error signing out:', err);
+      setError(err instanceof Error ? err.message : 'Error al cerrar sesión');
     }
   };
 
@@ -85,13 +80,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     loading,
     error,
-    signInWithGoogle: handleSignInWithGoogle,
-    signOut: handleSignOut
+    signInWithGoogle,
+    signOut,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
