@@ -8,93 +8,116 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
+  process.env.SUPABASE_SERVICE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 export const handler: Handler = async (event) => {
+  console.log('Webhook received');
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const stripeSignature = event.headers['stripe-signature'];
-  
-  if (!stripeSignature) {
+  const sig = event.headers['stripe-signature'];
+  if (!sig) {
     return { statusCode: 400, body: 'Missing stripe signature' };
   }
 
   try {
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-    const payload = event.body;
-    const event_data = stripe.webhooks.constructEvent(
-      payload!,
-      stripeSignature,
+    console.log('Webhook processing started');
+    
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      throw new Error('Missing STRIPE_WEBHOOK_SECRET');
+    }
+
+    // Get the raw body
+    const rawBody = event.body;
+    if (!rawBody) {
+      throw new Error('No body received');
+    }
+
+    // Parse and verify the event
+    const stripeEvent = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
       webhookSecret
     );
 
-    switch (event_data.type) {
-      case 'checkout.session.completed': {
-        const session = event_data.data.object as Stripe.Checkout.Session;
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-        
-        // Insert or update subscription in Supabase
-        const { error } = await supabase
-          .from('subscriptions')
-          .upsert({
-            user_id: session.client_reference_id,
-            stripe_customer_id: session.customer as string,
-            stripe_subscription_id: subscription.id,
-            plan_type: 'monthly', // or determine from the price ID
-            status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            trial_start: subscription.trial_start 
-              ? new Date(subscription.trial_start * 1000).toISOString()
-              : null,
-            trial_end: subscription.trial_end
-              ? new Date(subscription.trial_end * 1000).toISOString()
-              : null
-          });
+    console.log('Event type:', stripeEvent.type);
 
-        if (error) throw error;
-        break;
+    if (stripeEvent.type === 'checkout.session.completed') {
+      const session = stripeEvent.data.object as Stripe.Checkout.Session;
+      
+      console.log('Processing checkout session:', {
+        sessionId: session.id,
+        customerId: session.customer,
+        clientReferenceId: session.client_reference_id,
+        subscriptionId: session.subscription
+      });
+
+      if (!session.subscription) {
+        throw new Error('No subscription ID in session');
       }
 
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const subscription = event_data.data.object as Stripe.Subscription;
-        
-        const { error } = await supabase
-          .from('subscriptions')
-          .update({
-            status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at: subscription.cancel_at 
-              ? new Date(subscription.cancel_at * 1000).toISOString()
-              : null,
-            canceled_at: subscription.canceled_at
-              ? new Date(subscription.canceled_at * 1000).toISOString()
-              : null
-          })
-          .eq('stripe_subscription_id', subscription.id);
+      // Get subscription details
+      const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+      console.log('Retrieved subscription:', subscription.id);
 
-        if (error) throw error;
-        break;
+      // Prepare subscription data
+      const subscriptionData = {
+        user_id: session.client_reference_id,
+        stripe_customer_id: session.customer as string,
+        stripe_subscription_id: subscription.id,
+        plan_type: 'monthly',
+        status: subscription.status,
+        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Attempting to save subscription data:', subscriptionData);
+
+      // Save to Supabase
+      const { error } = await supabase
+        .from('subscriptions')
+        .upsert(subscriptionData);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`Failed to save subscription: ${error.message}`);
       }
+
+      console.log('Subscription saved successfully');
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ received: true }),
+      body: JSON.stringify({ 
+        received: true,
+        type: stripeEvent.type
+      })
     };
-  } catch (error) {
-    console.error('Webhook error:', error);
+  } catch (err) {
+    console.error('Webhook error:', err);
     return {
       statusCode: 400,
       body: JSON.stringify({
         error: 'Webhook handler failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      }),
+        message: err instanceof Error ? err.message : 'Unknown error',
+        details: err instanceof Error ? {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        } : err
+      })
     };
   }
 };
