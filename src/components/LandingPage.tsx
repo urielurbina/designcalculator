@@ -20,23 +20,23 @@ export default function LandingPage() {
   const features = [
     {
       icon: <Calculator className="w-6 h-6 text-indigo-600" />,
-      title: "Cálculo Preciso",
-      description: "Obtén cotizaciones precisas basadas en múltiples factores y variables del proyecto."
+      title: "Cotizador Premium",
+      description: "Accede a funciones avanzadas, plantillas personalizadas y seguimiento de cotizaciones."
     },
     {
       icon: <Clock className="w-6 h-6 text-indigo-600" />,
-      title: "Ahorra Tiempo",
-      description: "Genera cotizaciones profesionales en minutos, no en horas."
+      title: "Versión Gratuita",
+      description: "Calcula precios rápidamente con nuestra herramienta básica pero potente."
     },
     {
       icon: <FileDown className="w-6 h-6 text-indigo-600" />,
-      title: "PDF Profesional",
-      description: "Exporta cotizaciones en PDF con diseño profesional y personalizado."
+      title: "Exportación Avanzada",
+      description: "Genera PDFs profesionales con tu marca y términos personalizados."
     },
     {
       icon: <Shield className="w-6 h-6 text-indigo-600" />,
-      title: "Precios Justos",
-      description: "Asegura una compensación justa basada en tu experiencia y el alcance del proyecto."
+      title: "Gestión Completa",
+      description: "Administra clientes, proyectos y cotizaciones en un solo lugar."
     }
   ];
 
@@ -58,28 +58,28 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-8">
-              Calcula tus Precios de
+              Cotizadora Profesional para
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                {" "}Diseño Gráfico
+                {" "}Freelancers
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-              Genera cotizaciones profesionales en minutos con nuestra calculadora especializada para diseñadores gráficos.
+              Elige entre nuestra versión gratuita o accede a todas las funciones premium para gestionar tus cotizaciones como un profesional.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 px-4">
               <Link
                 to="/calculator"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors border-2 border-indigo-600"
               >
-                Comenzar Ahora
-                <ChevronRight className="w-5 h-5 ml-2" />
+                Versión Gratuita
+                <Calculator className="w-5 h-5 ml-2" />
               </Link>
               <Link
-                to="/freelance"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
+                to="/cotizar"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
               >
-                Calculadora Freelance
-                <Clock className="w-5 h-5 ml-2" />
+                Cotizador Premium
+                <ChevronRight className="w-5 h-5 ml-2" />
               </Link>
             </div>
           </div>
@@ -91,23 +91,23 @@ export default function LandingPage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Calcula Precios en Segundos
+              Gestión Profesional de Cotizaciones
             </h2>
             <p className="text-base sm:text-lg text-gray-600">
-              Nuestra interfaz intuitiva te permite calcular precios precisos para tus servicios de diseño en cuestión de segundos.
+              Con nuestra versión premium, accede a herramientas avanzadas para crear, gestionar y dar seguimiento a tus cotizaciones.
             </p>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <DollarSign className="w-5 h-5 text-indigo-600 shrink-0" />
-                <span className="text-gray-700">Precios base actualizados al mercado</span>
+                <span className="text-gray-700">Plantillas personalizadas para cada tipo de proyecto</span>
               </div>
               <div className="flex items-center gap-3">
                 <Sliders className="w-5 h-5 text-indigo-600 shrink-0" />
-                <span className="text-gray-700">Ajusta multiplicadores según el proyecto</span>
+                <span className="text-gray-700">Panel de control para gestionar clientes y proyectos</span>
               </div>
               <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-indigo-600 shrink-0" />
-                <span className="text-gray-700">Cotizaciones detalladas y profesionales</span>
+                <span className="text-gray-700">Seguimiento de cotizaciones y estados de proyectos</span>
               </div>
             </div>
           </div>
@@ -210,16 +210,28 @@ export default function LandingPage() {
       {/* CTA Section */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 py-12 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8">
-            ¿Listo para Comenzar?
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            ¿Listo para Llevar tus Cotizaciones al Siguiente Nivel?
           </h2>
-          <Link
-            to="/calculator"
-            className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-white text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
-          >
-            Crear mi Primera Cotización
-            <ChevronRight className="w-5 h-5 ml-2" />
-          </Link>
+          <p className="text-white text-lg mb-8">
+            Prueba nuestra versión premium y descubre todas las funcionalidades
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-white text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
+            >
+              Ver Planes Premium
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Link>
+            <Link
+              to="/calculator"
+              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-transparent text-white font-semibold border-2 border-white hover:bg-white/10 transition-colors"
+            >
+              Probar Versión Gratuita
+              <Calculator className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

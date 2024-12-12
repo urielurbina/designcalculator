@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calculator, Clock, User } from 'lucide-react';
+import { Calculator, Crown, User, Palette, Clock } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -11,7 +11,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-semibold text-white mb-4">Referencia Creativa</h3>
             <p className="text-gray-400">
-              Herramienta profesional para calcular precios de diseño gráfico y tarifas freelance.
+              Herramientas profesionales para diseñadores y freelancers. Calcula precios, genera cotizaciones y gestiona tus proyectos.
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export default function Footer() {
                   className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 >
                   <Calculator className="w-4 h-4" />
-                  <span>Calculadora de Diseño</span>
+                  <span>Calculadora Gratuita</span>
                 </Link>
               </li>
               <li>
@@ -34,7 +34,33 @@ export default function Footer() {
                   className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 >
                   <Clock className="w-4 h-4" />
-                  <span>Calculadora Freelance</span>
+                  <span>Calculadora por Horas</span>
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/cotizar"
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <Crown className="w-4 h-4" />
+                  <span>Cotizador Premium</span>
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/colors"
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <Palette className="w-4 h-4" />
+                  <span>Convertidor de Colores</span>
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/pricing"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  Planes y Precios
                 </Link>
               </li>
               <li>
