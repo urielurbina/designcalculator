@@ -14,7 +14,16 @@ export default defineConfig({
     'global': {},
   },
   optimizeDeps: {
-    include: ['@react-pdf/renderer', 'buffer']
+    include: ['@react-pdf/renderer', 'buffer', '@stripe/stripe-js']
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   build: {
     commonjsOptions: {
@@ -25,7 +34,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['@react-pdf/renderer', 'framer-motion', 'lucide-react'],
-          'db-vendor': ['@supabase/supabase-js']
+          'db-vendor': ['@supabase/supabase-js', '@stripe/stripe-js']
         }
       }
     }
