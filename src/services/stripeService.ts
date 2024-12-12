@@ -110,3 +110,26 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
     return { isActive: false, planType: null };
   }
 }
+
+export async function handleSubscriptionSuccess(sessionId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/verify-subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sessionId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to verify subscription');
+    }
+
+    // Optionally refresh the user's subscription status
+    // or redirect to a welcome page
+    window.location.href = '/dashboard';
+  } catch (error) {
+    console.error('Error handling subscription success:', error);
+    // Handle error appropriately
+  }
+}
