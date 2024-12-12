@@ -22,9 +22,9 @@ export async function createCheckoutSession(priceId: string): Promise<{ sessionI
       },
       body: JSON.stringify({
         priceId,
-        successUrl: `${window.location.origin}/cotizar?success=true`,
-        cancelUrl: `${window.location.origin}/cotizar?canceled=true`,
         userId: user.id,
+        successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
       }),
     });
 
