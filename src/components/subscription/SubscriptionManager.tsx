@@ -19,8 +19,12 @@ export default function SubscriptionManager({
   const handleManageSubscription = async () => {
     try {
       setLoading(true);
-      const portalUrl = await createPortalSession();
-      window.location.href = portalUrl;
+      const portalUrl: string = await createPortalSession();
+      if (portalUrl) {
+        window.location.href = portalUrl;
+      } else {
+        throw new Error('No se recibió URL del portal');
+      }
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast.error('Error al abrir el portal de gestión');

@@ -18,8 +18,12 @@ export default function PricingPlans() {
   const handleSubscribe = async (priceId: string) => {
     try {
       setLoading(priceId);
-      const checkoutUrl = await createCheckoutSession(priceId);
-      window.location.href = checkoutUrl;
+      const checkoutUrl: string = await createCheckoutSession(priceId);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('No se recibió URL de checkout');
+      }
     } catch (error) {
       console.error('Error initiating checkout:', error);
       toast.error('Error al procesar el pago. Por favor intenta de nuevo.');

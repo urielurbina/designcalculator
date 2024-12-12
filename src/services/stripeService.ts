@@ -10,7 +10,7 @@ export interface SubscriptionStatus {
   cancelAtPeriodEnd?: boolean;
 }
 
-export async function createCheckoutSession(priceId: string) {
+export async function createCheckoutSession(priceId: string): Promise<string> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -31,13 +31,14 @@ export async function createCheckoutSession(priceId: string) {
     if (!data.url) throw new Error('No checkout URL returned');
 
     window.location.href = data.url;
+    return data.url;
   } catch (error) {
     console.error('Error creating checkout session:', error);
     throw error;
   }
 }
 
-export async function createPortalSession() {
+export async function createPortalSession(): Promise<string> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
@@ -57,6 +58,7 @@ export async function createPortalSession() {
     if (!data.url) throw new Error('No portal URL returned');
 
     window.location.href = data.url;
+    return data.url;
   } catch (error) {
     console.error('Error creating portal session:', error);
     throw error;
