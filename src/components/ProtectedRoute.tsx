@@ -19,7 +19,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }
 
   if (!user) {
-    // Guardar la ubicación actual para redirigir después del login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   

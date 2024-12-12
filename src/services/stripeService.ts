@@ -15,18 +15,22 @@ export async function createCheckoutSession(priceId: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    const { data: session, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: { 
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         priceId,
         userId: user.id,
         returnUrl: `${window.location.origin}/cotizar`
-      }
+      }),
     });
 
-    if (error) throw error;
-    if (!session?.url) throw new Error('No checkout URL returned');
+    const data = await response.json();
+    if (!data.url) throw new Error('No checkout URL returned');
 
-    return session.url;
+    window.location.href = data.url;
   } catch (error) {
     console.error('Error creating checkout session:', error);
     throw error;
@@ -38,17 +42,21 @@ export async function createPortalSession() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    const { data: session, error } = await supabase.functions.invoke('create-portal-session', {
-      body: { 
+    const response = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         userId: user.id,
         returnUrl: `${window.location.origin}/cotizar`
-      }
+      }),
     });
 
-    if (error) throw error;
-    if (!session?.url) throw new Error('No portal URL returned');
+    const data = await response.json();
+    if (!data.url) throw new Error('No portal URL returned');
 
-    return session.url;
+    window.location.href = data.url;
   } catch (error) {
     console.error('Error creating portal session:', error);
     throw error;
