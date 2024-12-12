@@ -56,21 +56,26 @@ export async function createPortalSession(): Promise<string> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    const response = await fetch('/api/create-portal-session', {
+    const response = await fetch('/.netlify/functions/create-portal-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId: user.id,
-        returnUrl: `${window.location.origin}/cotizar`
+        userId: user.id
       }),
     });
 
-    const data = await response.json();
-    if (!data.url) throw new Error('No portal URL returned');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error creating portal session');
+    }
 
-    window.location.href = data.url;
+    const data = await response.json();
+    if (!data.url) {
+      throw new Error('No portal URL returned');
+    }
+
     return data.url;
   } catch (error) {
     console.error('Error creating portal session:', error);
