@@ -35,34 +35,36 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    // Get customer ID from subscriptions table
-    const { data: subscription, error: subscriptionError } = await supabase
+    // First, get the stripe_customer_id
+    const { data: customer } = await supabase
       .from('subscriptions')
       .select('stripe_customer_id')
       .eq('user_id', userId)
       .single();
 
-    if (subscriptionError || !subscription?.stripe_customer_id) {
-      throw new Error('No subscription found for user');
+    if (!customer?.stripe_customer_id) {
+      throw new Error('Customer not found');
     }
 
-    // Create the portal session
-    const session = await stripe.billingPortal.sessions.create({
-      customer: subscription.stripe_customer_id,
-      return_url: `${process.env.URL}/pricing`,
+    // Create a simple portal session
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: customer.stripe_customer_id,
+      return_url: `${process.env.URL}/pricing`
     });
+
+    console.log('Created portal session:', portalSession.id);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ url: session.url })
+      body: JSON.stringify({ url: portalSession.url })
     };
   } catch (error) {
-    console.error('Error creating portal session:', error);
+    console.error('Portal session error:', error);
     return {
       statusCode: 400,
       body: JSON.stringify({ 
-        error: 'Error creating portal session',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to create portal session',
+        details: error instanceof Error ? error.message : 'Unknown error'
       })
     };
   }
