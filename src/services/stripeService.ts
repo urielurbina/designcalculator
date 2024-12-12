@@ -15,6 +15,8 @@ export async function createCheckoutSession(priceId: string): Promise<{ sessionI
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
+    const isLifetime = priceId === import.meta.env.VITE_STRIPE_LIFETIME_PRICE_ID;
+
     const response = await fetch('/.netlify/functions/create-checkout-session', {
       method: 'POST',
       headers: {
@@ -25,6 +27,7 @@ export async function createCheckoutSession(priceId: string): Promise<{ sessionI
         userId: user.id,
         successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+        isLifetime,
       }),
     });
 

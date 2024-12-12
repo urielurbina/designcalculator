@@ -14,14 +14,14 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { priceId, userId } = JSON.parse(event.body || '{}');
+    const { priceId, userId, isLifetime } = JSON.parse(event.body || '{}');
 
     if (!priceId || !userId) {
       throw new Error('Missing required parameters');
     }
 
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isLifetime ? 'payment' : 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -32,6 +32,10 @@ export const handler: Handler = async (event) => {
       success_url: `${process.env.URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.URL}/pricing`,
       client_reference_id: userId,
+      metadata: {
+        userId,
+        planType: isLifetime ? 'lifetime' : 'monthly'
+      }
     });
 
     return {
