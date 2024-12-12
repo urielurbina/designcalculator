@@ -14,25 +14,25 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
       return { isActive: false, planType: null };
     }
 
-    const { data: subscription, error } = await supabase
+    const { data: subscriptions, error } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error && error.code !== 'PGRST116') throw error;
 
-    if (!subscription) {
+    if (!subscriptions) {
       return { isActive: false, planType: null };
     }
 
-    const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+    const isActive = subscriptions.status === 'active' || subscriptions.status === 'trialing';
 
     return {
       isActive,
-      planType: subscription.plan_type,
-      currentPeriodEnd: subscription.current_period_end,
-      cancelAtPeriodEnd: Boolean(subscription.cancel_at)
+      planType: subscriptions.plan_type,
+      currentPeriodEnd: subscriptions.current_period_end,
+      cancelAtPeriodEnd: Boolean(subscriptions.cancel_at)
     };
   } catch (error) {
     console.error('Error getting subscription status:', error);

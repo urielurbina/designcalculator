@@ -15,7 +15,7 @@ export async function createCheckoutSession(priceId: string): Promise<{ sessionI
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    const response = await fetch('/api/create-checkout-session', {
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

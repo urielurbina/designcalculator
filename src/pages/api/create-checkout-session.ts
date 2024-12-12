@@ -91,3 +91,33 @@ export default async function handler(req: Request) {
     );
   }
 }
+
+export async function createCheckoutSession(priceId: string): Promise<{ sessionId: string; url: string }> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user');
+
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        priceId,
+        successUrl: `${window.location.origin}/cotizar?success=true`,
+        cancelUrl: `${window.location.origin}/cotizar?canceled=true`,
+        userId: user.id,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error en el checkout');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    throw error;
+  }
+}
